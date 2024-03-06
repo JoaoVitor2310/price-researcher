@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Price Researcher</title>
+</head>
+
+<body>
+    <h1>Price Researcher</h1>
+    <p>Envie um arquivo .txt (bloco de notas) SOMENTE com o nome do jogo em cada linha, evite também colocar espaços em
+        branco no início e no final.</p>
+    <form id="uploadForm">
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <br>
+        <br>
+        <input type="button" value="Enviar Arquivo" onclick="uploadFile()">
+    </form>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileToUpload');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Por favor, envie o arquivo com o nome dos jogos(1 por linha).");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('fileToUpload', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.error) {
+                    console.error('Erro:', error);
+                    alert('O arquivo possui algum erro de digitação, confira se enviou 1 jogo por linha e sem espaço em branco no início ou no final.');
+                }
+
+                const responseData = await response.text(); // DEBUG
+                console.log(responseData);
+                return;
+
+                const blob = await response.blob(); // Recebe o arquivo modificado como Blob
+
+                // Cria um URL temporário para o Blob
+                const url = window.URL.createObjectURL(blob);
+
+                // Cria um link <a> para download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'arquivo_modificado.txt'; // Define o nome do arquivo
+                document.body.appendChild(a);
+
+                // Aciona o clique no link para iniciar o download
+                a.click();
+
+                // Remove o link do corpo do documento
+                document.body.removeChild(a);
+
+                // Revoga o URL temporário
+                window.URL.revokeObjectURL(url);
+
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao enviar arquivo.');
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Isso impede o envio do formulário padrão
+        });
+    </script>
+</body>
+
+</html>
