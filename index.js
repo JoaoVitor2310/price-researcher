@@ -63,17 +63,54 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
             //       await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
             // }
 
-            let searchString = gamesToSearch.replace(/ /g, "%20"); // Substitui os espaços em branco por "%20", que é como fica na URL
+            let searchString = gamesToSearch[0].replace(/ /g, "%20"); // Substitui os espaços em branco por "%20", que é como fica na URL
             await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
 
-            // await page.waitForSelector('#searchInputDesktop');
-            // await page.click('#searchInputDesktop');
+            await page.waitForSelector('.search-results__tiles');
 
-            // await page.type('#searchInputDesktop', gamesToSearch[0]);
+            // Obtém todos os elementos com a classe "product-tile__name"
+            const resultados = await page.$$('.product-tile__name');
 
-            // await page.evaluate(() => {
-            //       document.querySelector("#search-input > button > i").click();
-            // });
+            // Itera sobre cada resultado
+            for (const resultado of resultados) {
+                  // Obtém o texto do elemento "span" com a classe "ng-star-inserted" dentro do resultado
+                  const nomeDoJogo = await resultado.$eval('span.ng-star-inserted', element => element.textContent);
+
+                  // Verifica se o texto do jogo contém a palavra "Steam"
+                  if (nomeDoJogo.includes(gamesToSearch[0])) {
+
+                        const regex = new RegExp(`${gamesToSearch[0]}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i');
+                        if (regex.test(nomeDoJogo)) {
+                              // Clica no resultado
+                              await resultado.click();
+                              break; // Encerra o loop depois de clicar em um resultado
+                        }
+
+                  }
+            }
+
+
+            try {
+                  await page.waitForSelector('span.price__value');
+                  
+                  const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
+              
+                  console.log(prices[0]);
+              } catch (error) {
+                  console.error('Erro ao encontrar os spans com a classe price__value:', error);
+              }
+              
+
+            // console.log(spans);
+
+            // €
+
+
+
+
+
+
+
 
             // await browser.close();
       })();
