@@ -1,4 +1,4 @@
-# API G2A
+# Price Researcher
 
 ### Para rodar:
 Realizar o clone do repositório  

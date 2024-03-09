@@ -42,9 +42,9 @@
                     alert('O arquivo possui algum erro de digitação, confira se enviou 1 jogo por linha e sem espaço em branco no início ou no final.');
                 }
 
-                const responseData = await response.text(); // DEBUG
-                console.log(responseData);
-                return;
+                // const responseData = await response.text(); // DEBUG
+                // console.log(responseData);
+                // return;
 
                 const blob = await response.blob(); // Recebe o arquivo modificado como Blob
 

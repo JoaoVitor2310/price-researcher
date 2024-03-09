@@ -27,7 +27,7 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
 
 
 
-      let gamesToSearch = [];
+      let gamesToSearch = [], precoGamivo, lineToWrite;
       const filePath = req.file.path;
       const fileContent = fs.readFileSync(filePath, 'utf8');
 
@@ -57,18 +57,13 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
                   height: 1080
             });
 
-
-            // for(let game of gamesToSearch){
-            //       let searchString = game.replace(/ /g, "%20");
-            //       await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
-            // }
-
             let searchString = gamesToSearch[0].replace(/ /g, "%20"); // Substitui os espaços em branco por "%20", que é como fica na URL
+            console.log("searchString: " + searchString);
             await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
 
             await page.waitForSelector('.search-results__tiles');
 
-            // Obtém todos os elementos com a classe "product-tile__name"
+            // Obtém todos os resultados da pesquisa do nome do jogo
             const resultados = await page.$$('.product-tile__name');
 
             // Itera sobre cada resultado
@@ -89,54 +84,38 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
                   }
             }
 
-
             try {
                   await page.waitForSelector('span.price__value');
-                  
+
                   const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
-              
-                  console.log(prices[0]);
-              } catch (error) {
-                  console.error('Erro ao encontrar os spans com a classe price__value:', error);
-              }
-              
 
-            // console.log(spans);
+                  precoGamivo = prices[0];
+                  console.log(precoGamivo);
+            } catch (error) {
+                  console.error('Erro ao encontrar os spans com a classe price__value: ', error);
+            }
 
-            // €
-
-
-
-
-
-
-
+            lineToWrite = `${precoGamivo}\tKINGUIN`;
+            fs.writeFileSync(filePath, lineToWrite);
 
             // await browser.close();
+
+            console.log(lineToWrite);
+
+            res.download(filePath, 'arquivo_modificado.txt', (err) => {
+                  if (err) {
+                        console.error('Erro ao fazer o download do arquivo:', err);
+                  } else {
+                        // Exclui o arquivo após o download
+                        fs.unlinkSync(filePath);
+                  }
+            });
       })();
 
-      // console.log(fileContent);
 
+      // res.json('A'); // DEBUG
+      // return;
 
-      fs.unlinkSync(filePath);
-
-      res.json('A'); // DEBUG
-      return;
-
-
-
-      // Modifique o conteúdo do arquivo
-      const modifiedContent = gamesToSearch.toString();
-      // const modifiedContent = 'FEITO';
-
-      // Escreva o conteúdo modificado no arquivo
-      fs.writeFileSync(filePath, modifiedContent);
-
-      // Retorna o arquivo modificado
-      res.download(filePath, 'arquivo_modificado.txt', () => {
-            // Exclui o arquivo após o download
-            fs.unlinkSync(filePath);
-      });
 })
 
 const port = process.env.PORT || 5000;
