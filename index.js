@@ -5,6 +5,7 @@ const path = require("path");
 const multer = require('multer');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
+const searchSteamDb = require('./functions/searchSteamDb');
 
 // import path from "path";
 
@@ -20,7 +21,7 @@ app.get('/', (req, res) => {
 
 const upload = multer({ dest: 'uploads/' });
 
-app.post('/upload', upload.single('fileToUpload'), (req, res) => {
+app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       if (!req.file) {
             return res.status(400).send('Nenhum arquivo enviado.');
       }
@@ -44,6 +45,11 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
             }
       }
 
+      const searchPopularity = await searchSteamDb('Fallout 3');
+
+      console.log(searchPopularity); // Debug
+      res.json('A'); // DEBUG
+      return;
 
       (async () => {
             const browser = await puppeteer.launch({
@@ -57,7 +63,12 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
                   height: 1080
             });
 
-            let searchString = gamesToSearch[0].replace(/ /g, "%20"); // Substitui os espaços em branco por "%20", que é como fica na URL
+            // await page.goto(`https://steamdb.info/`); Função de busca no steamDB
+
+
+            let searchString = gamesToSearch[0].replace(/ /g, "%20").replace(/\//g, "%2F"); // Substitui os espaços em branco por %20, e / por %2F
+
+
             console.log("searchString: " + searchString);
             await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
 
@@ -67,9 +78,11 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
             const resultados = await page.$$('.product-tile__name');
 
             // Itera sobre cada resultado
+
             for (const resultado of resultados) {
                   // Obtém o texto do elemento "span" com a classe "ng-star-inserted" dentro do resultado
                   const nomeDoJogo = await resultado.$eval('span.ng-star-inserted', element => element.textContent);
+                  console.log(nomeDoJogo)
 
                   // Verifica se o texto do jogo contém a palavra "Steam"
                   if (nomeDoJogo.includes(gamesToSearch[0])) {
@@ -85,17 +98,37 @@ app.post('/upload', upload.single('fileToUpload'), (req, res) => {
             }
 
             try {
-                  await page.waitForSelector('span.price__value');
+                  await page.waitForFunction(
+                        'document.querySelectorAll("span.price__value").length > 0',
+                        { timeout: 8000 }
+                  );
 
                   const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
 
-                  precoGamivo = prices[0];
+                  precoGamivo = prices[0].replace('€', '');
                   console.log(precoGamivo);
-            } catch (error) {
-                  console.error('Erro ao encontrar os spans com a classe price__value: ', error);
+                  lineToWrite = `${precoGamivo}\tKINGUIN`;
+            } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta
+                  lineToWrite = `F\tKINGUIN`; // Iremos escrever F
             }
 
-            lineToWrite = `${precoGamivo}\tKINGUIN`;
+
+
+
+            // try {
+            //       await page.waitForSelector('span.price__value');
+
+            //       // const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
+
+
+            //       precoGamivo = prices[0];
+            //       console.log(precoGamivo);
+            //       lineToWrite = `${precoGamivo}\tKINGUIN`;
+            // } catch (error) {
+            //       lineToWrite = `F\tKINGUIN`; 
+            //       console.log('Erro ao encontrar os spans com a classe price__value: ', error);
+            // }
+
             fs.writeFileSync(filePath, lineToWrite);
 
             // await browser.close();
@@ -123,3 +156,7 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
       console.log(`Listening to port ${port}.`);
 })
+
+
+
+// .hack   %2F %2F   G.U.%20Last%20Recode
