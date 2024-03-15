@@ -4,7 +4,6 @@ const puppeteer = require('puppeteer');
 
 const searchSteamDb = async (gameString) => {
     try {
-        console.log('Acessou a função')
         const browser = await puppeteer.launch({
             userDataDir: null,
             headless: false
@@ -16,55 +15,60 @@ const searchSteamDb = async (gameString) => {
             height: 1080
         });
 
-        await page.goto(`https://steamdb.info/`);
+        await page.goto(`https://steamcharts.com/`);
+
+        await page.waitForSelector('input[placeholder="search games"]');
+
+        // Seletor do elemento de entrada
+        const inputElement = await page.waitForSelector('input[placeholder="search games"]', { visible: true });
+
+        // Digita 'Fallout 3' no elemento de entrada
+        await inputElement.type('Fallout 3');
+        await inputElement.press('Enter');
+
+        await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 10 segundos para depois fechar o navegador
+        // await page.goto(`https://steamdb.info/`);
 
         await page.waitForSelector('input.field');
 
         await page.type('input.field', gameString);
 
-        const arrayGameString = gameString.split(' '); // Aqui recebe Fallout 3 e fica [ 'Fallout', '3' ]
+        let arrayGameString = gameString.split(' '); // Aqui recebe Fallout 3 e fica [ 'Fallout', '3' ]
         console.log(arrayGameString);
 
 
-        // const elements = await page.$$('a.app');
+        // await page.waitForSelector('.header-search-suggestions a.app'); // Funciona
+        // const appLinks = await page.evaluate(() => {
+        //     const links = document.querySelectorAll('.header-search-suggestions a.app');
+        //     return Array.from(links).map(link => link.href);
+        // });
+        // console.log(appLinks);
 
-        const elements = await page.evaluate(() => {
-            const links = document.querySelectorAll('a.app');
-            const desiredLinks = [];
-            links.forEach(link => {
-                const spans = link.querySelectorAll('.s-hit--highlight');
-                if (spans.length === 2) {
-                    desiredLinks.push(link);
-                }
-            });
-            return desiredLinks;
-        });
+        // let a;
+        // for (const link of appLinks) { // Funciona
+        //     // await page.goto(link); // Pede captcha
 
-        if (elements.length > 0) {
-            // Clica no primeiro elemento encontrado
-            await elements[0].click();
-        } else {
-            console.log('Nenhum resultado encontrado com os spans desejados.');
-        }
-        
-        
-        
-        
-        // Itera sobre os elementos para encontrar o desejado
-        // for (const element of elements) {
-        //     const spans = await element.$$('.s-hit--highlight');
-        //     console.log('n de spans: ' + spans);
-        //     if (spans.length === 2) {
-        //         await element.click();
-        //         break;
-        //     }
+        //     a = await page.evaluate(() => {
+        //         return document.querySelectorAll('a.app');
+        //     });    
         // }
+        // console.log(a);
 
-        // await page.click('//*[contains(text(), "Fallout")][contains(text(), "3")]/..');
-        // await page.click('input.field');
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Debug, espera 10 segundos para depois fechar o navegador
+
+        await page.waitForSelector('.s-hit--highlight'); // Espera o elemento carregar
+        const spanElement = await page.$('.s-hit--highlight'); // Localiza o elemento span
+
+        if (spanElement) {
+            await spanElement.click(); // Clica no elemento span
+            console.log('Clicado com sucesso no elemento span.');
+        } else {
+            console.log('Elemento span não encontrado.');
+        }
 
 
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Debug, espera 10 segundos para depois fechar o navegador
+
+
 
         await browser.close();
         return 1;
