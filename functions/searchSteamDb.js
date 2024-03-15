@@ -1,4 +1,3 @@
-const axios = require('axios');
 require('dotenv').config();
 const puppeteer = require('puppeteer');
 
@@ -44,7 +43,7 @@ const searchSteamDb = async (gameString) => {
         const spans = await page.$$('span.num');
 
         const popularity = await page.evaluate(span => span.textContent.trim(), spans[1]);
-        console.log('Texto do segundo span:', popularity);
+        console.log('Pico em 24h:', popularity);
 
         // await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 300 segundos para depois fechar o navegador
 
