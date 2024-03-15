@@ -45,7 +45,15 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             }
       }
 
-      const searchPopularity = await searchSteamDb('Fallout 3');
+
+      const popularity = await searchSteamDb(gamesToSearch[0]);
+
+      if (popularity < 30) {
+            
+      } else {
+
+      }
+
 
       console.log(searchPopularity); // Debug
       res.json('A'); // DEBUG

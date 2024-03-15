@@ -6,7 +6,7 @@ const searchSteamDb = async (gameString) => {
     try {
         const browser = await puppeteer.launch({
             userDataDir: null,
-            headless: false
+            headless: true
         });
         const page = await browser.newPage();
 
@@ -22,56 +22,37 @@ const searchSteamDb = async (gameString) => {
         // Seletor do elemento de entrada
         const inputElement = await page.waitForSelector('input[placeholder="search games"]', { visible: true });
 
-        // Digita 'Fallout 3' no elemento de entrada
-        await inputElement.type('Fallout 3');
+        // Digita o nome do jogo no elemento de entrada
+        await inputElement.type(gameString);
         await inputElement.press('Enter');
 
-        await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 10 segundos para depois fechar o navegador
-        // await page.goto(`https://steamdb.info/`);
 
-        await page.waitForSelector('input.field');
+        await page.waitForNavigation();
 
-        await page.type('input.field', gameString);
+        const links = await page.$$('a');
 
-        let arrayGameString = gameString.split(' '); // Aqui recebe Fallout 3 e fica [ 'Fallout', '3' ]
-        console.log(arrayGameString);
-
-
-        // await page.waitForSelector('.header-search-suggestions a.app'); // Funciona
-        // const appLinks = await page.evaluate(() => {
-        //     const links = document.querySelectorAll('.header-search-suggestions a.app');
-        //     return Array.from(links).map(link => link.href);
-        // });
-        // console.log(appLinks);
-
-        // let a;
-        // for (const link of appLinks) { // Funciona
-        //     // await page.goto(link); // Pede captcha
-
-        //     a = await page.evaluate(() => {
-        //         return document.querySelectorAll('a.app');
-        //     });    
-        // }
-        // console.log(a);
-
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Debug, espera 10 segundos para depois fechar o navegador
-
-        await page.waitForSelector('.s-hit--highlight'); // Espera o elemento carregar
-        const spanElement = await page.$('.s-hit--highlight'); // Localiza o elemento span
-
-        if (spanElement) {
-            await spanElement.click(); // Clica no elemento span
-            console.log('Clicado com sucesso no elemento span.');
-        } else {
-            console.log('Elemento span não encontrado.');
+        for (const link of links) {
+            const text = await page.evaluate(el => el.textContent, link);
+            if (text === gameString) {
+                console.log("Jogo clicado")
+                await link.click();
+                break; // Finaliza o loop pois encontrou o elemento
+            }
         }
 
+        await page.waitForSelector('span.num');
+        const spans = await page.$$('span.num');
 
+        const popularity = await page.evaluate(span => span.textContent.trim(), spans[1]);
+        console.log('Texto do segundo span:', popularity);
 
+        // await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 300 segundos para depois fechar o navegador
+
+        // await new Promise(resolve => setTimeout(resolve, 3000)); // Debug, espera 10 segundos para depois fechar o navegador
 
 
         await browser.close();
-        return 1;
+        return popularity;
     } catch (error) {
         console.error(error);
         throw new Error('Erro ao consultar site externo.');
