@@ -1,5 +1,4 @@
-require('dotenv').config();
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 const searchSteamDb = async (gameString) => {
     try {
@@ -47,9 +46,6 @@ const searchSteamDb = async (gameString) => {
 
         // await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 300 segundos para depois fechar o navegador
 
-        // await new Promise(resolve => setTimeout(resolve, 3000)); // Debug, espera 10 segundos para depois fechar o navegador
-
-
         await browser.close();
         return popularity;
     } catch (error) {
@@ -58,4 +54,4 @@ const searchSteamDb = async (gameString) => {
     }
 };
 
-module.exports = searchSteamDb;
+export default searchSteamDb;

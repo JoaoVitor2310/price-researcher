@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 const searchGamivo = async (gameString, popularity) => {
     try {
@@ -76,4 +76,4 @@ const searchGamivo = async (gameString, popularity) => {
     }
 };
 
-module.exports = searchGamivo;
+export default searchGamivo;

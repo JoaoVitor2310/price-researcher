@@ -1,12 +1,13 @@
-const express = require('express');
-const axios = require('axios');
-require('dotenv').config();
-const path = require("path");
-const multer = require('multer');
-const fs = require('fs');
-const puppeteer = require('puppeteer');
-const searchSteamDb = require('./functions/searchSteamDb');
-const searchGamivo = require('./functions/searchGamivo');
+import express  from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
+import path from 'path';
+import multer from 'multer';
+import fs from 'fs';
+import puppeteer from 'puppeteer';
+import searchSteamDb from "./functions/searchSteamDb.js";
+import searchGamivo from "./functions/searchGamivo.js";
+import searchG2A from "./functions/searchG2A.js";
 
 // import path from "path";
 
@@ -47,12 +48,16 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       }
 
 
-      const popularity = await searchSteamDb(gamesToSearch[0]);
+      // const popularity = await searchSteamDb(gamesToSearch[0]);
 
-      console.log("Executanto gamivo!");
-      const priceGamivo = await searchGamivo(gamesToSearch[0], popularity);
+      // console.log("Executanto gamivo!");
+      // const priceGamivo = await searchGamivo(gamesToSearch[0], popularity);
+      // console.log("priceGamivo: " + priceGamivo);
+      
+      console.log("Executando G2A");
+      const priceG2A = await searchG2A(gamesToSearch[0]);
+      console.log("priceG2A: " + priceG2A);
 
-      console.log("priceGamivo: " + priceGamivo);
 
       // console.log(searchPopularity); // Debug
       res.json('A'); // DEBUG
