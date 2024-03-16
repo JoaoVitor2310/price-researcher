@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 
 const searchGamivo = async (gameString, popularity) => {
+    let precoGamivo, lineToWrite;
     try {
         const browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
@@ -15,7 +16,6 @@ const searchGamivo = async (gameString, popularity) => {
 
 
         let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F"); // Substitui os espaços em branco por %20, e / por %2F
-
 
         // console.log("searchString: " + searchString);
         await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
@@ -64,7 +64,7 @@ const searchGamivo = async (gameString, popularity) => {
                 lineToWrite = `${precoGamivo}\tKINGUIN`;
             }
 
-        } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta
+        } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta ou outros problemas
             lineToWrite = `F\tKINGUIN`; // Iremos escrever F
         }
 

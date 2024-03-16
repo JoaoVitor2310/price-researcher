@@ -4,7 +4,7 @@ const searchSteamDb = async (gameString) => {
     try {
         const browser = await puppeteer.launch({
             userDataDir: null,
-            headless: true
+            headless: false
         });
         const page = await browser.newPage();
 

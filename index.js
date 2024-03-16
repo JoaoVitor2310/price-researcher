@@ -64,7 +64,7 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       return;
 
 
-      fs.writeFileSync(filePath, lineToWrite);
+      // fs.writeFileSync(filePath, lineToWrite);
 
       res.download(filePath, 'arquivo_modificado.txt', (err) => {
             if (err) {
