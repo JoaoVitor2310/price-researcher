@@ -1,10 +1,9 @@
-import express  from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
 import path from 'path';
 import multer from 'multer';
 import fs from 'fs';
-import puppeteer from 'puppeteer';
 import searchSteamDb from "./functions/searchSteamDb.js";
 import searchGamivo from "./functions/searchGamivo.js";
 import searchG2A from "./functions/searchG2A.js";
@@ -18,7 +17,7 @@ app.use(express.static(pasta));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-      res.send('Desenvolvido por João Vitor Gouveia e Lucas Corrado.');
+      res.send('Desenvolvido por João Vitor Gouveia. Linkedin: https://www.linkedin.com/in/jo%C3%A3o-vitor-matos-gouveia-14b71437/');
 })
 
 const upload = multer({ dest: 'uploads/' });
@@ -30,7 +29,7 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
 
 
-      let gamesToSearch = [], lineToWrite;
+      let gamesToSearch = [], lineToWrite, responseFile = '';
       const filePath = req.file.path;
       const fileContent = fs.readFileSync(filePath, 'utf8');
 
@@ -48,23 +47,44 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       }
 
 
-      // const popularity = await searchSteamDb(gamesToSearch[0]);
+      // O for vai começar aqui passando em todos os gamesToSearch
+      for (let game of gamesToSearch) {
+            console.log("game: " + game);
 
-      // console.log("Executanto gamivo!");
-      // const priceGamivo = await searchGamivo(gamesToSearch[0], popularity);
-      // console.log("priceGamivo: " + priceGamivo);
-      
-      console.log("Executando G2A");
-      const priceG2A = await searchG2A(gamesToSearch[0]);
-      console.log("priceG2A: " + priceG2A);
+            const popularity = await searchSteamDb(game);
+            console.log(popularity);
 
+            console.log("Executanto gamivo!");
+            const priceGamivo = await searchGamivo(game, popularity);
+            console.log("priceGamivo: " + priceGamivo);
+
+
+            console.log("Executando G2A");
+            const priceG2A = await searchG2A(game, popularity);
+            console.log("priceG2A: " + priceG2A);
+
+
+            // Pesquisa kinguin
+
+            // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
+
+            const fullLine = `${priceG2A}\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Escreve a linha para o txt
+            // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t${popularity}\n`; // Debug só G2A
+            // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
+            console.log(fullLine);
+
+            // Termina o for de cada jogo, deve finalizar de montar o arquivo txt que será enviado
+            responseFile += fullLine;
+      }
+
+      console.log("responseFile:\n" + responseFile);
 
       // console.log(searchPopularity); // Debug
-      res.json('A'); // DEBUG
-      return;
+      // res.json('A'); // DEBUG
+      // return;
 
 
-      // fs.writeFileSync(filePath, lineToWrite);
+      fs.writeFileSync(filePath, responseFile);
 
       res.download(filePath, 'arquivo_modificado.txt', (err) => {
             if (err) {

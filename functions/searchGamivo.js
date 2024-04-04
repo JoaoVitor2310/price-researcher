@@ -1,7 +1,25 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
+
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+
+puppeteer.use(
+    AdblockerPlugin({
+        // Optionally enable Cooperative Mode for several request interceptors
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+    })
+)
+
+
+
+import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const apiGamivoUrl = process.env.apiGamivoUrl;
 
 const searchGamivo = async (gameString, popularity) => {
-    let precoGamivo, lineToWrite;
+    let precoGamivo, lineToWrite, productString;
     try {
         const browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
@@ -38,40 +56,53 @@ const searchGamivo = async (gameString, popularity) => {
                 const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i');
                 if (regex.test(nomeDoJogo)) {
                     // Clica no resultado
-                    await resultado.click();
+                    // await resultado.click();
+                    
+                    const elementoLink = await resultado.$('a');
+                    const href = await (await elementoLink.getProperty('href')).jsonValue();
+                    
+                    const startIndex = href.indexOf('/product/') + '/product/'.length;
+                    productString = href.substring(startIndex);
+                    
+                    await browser.close();
                     break; // Encerra o loop depois de clicar em um resultado
                 }
-
             }
         }
 
+        // console.log(productString);
 
-        try {
-            await page.waitForFunction(
-                'document.querySelectorAll("span.price__value").length > 0',
-                { timeout: 8000 }
-            );
-
-            const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
-
-            precoGamivo = prices[0].replace('€', '');
-            console.log("precoGamivo: " + precoGamivo);
-
-
-            if (popularity < 30 && precoGamivo > 2.00) {
-                lineToWrite = `N\tKINGUIN`;
-            } else {
-                lineToWrite = `${precoGamivo}\tKINGUIN`;
-            }
-
-        } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta ou outros problemas
-            lineToWrite = `F\tKINGUIN`; // Iremos escrever F
+        const response = await axios.get(`${apiGamivoUrl}/api/products/priceResearcher/${productString}`);
+        const precoGamivo = response.data.menorPreco;
+        
+        if (popularity < 30 && precoGamivo > 2.00) {
+            lineToWrite = `N`;
+        } else {
+            lineToWrite = `${precoGamivo}`;
         }
-
-        await browser.close();
+        
         return lineToWrite;
+
+        // try {
+        //     await page.waitForFunction(
+        //         'document.querySelectorAll("span.price__value").length > 0',
+        //         { timeout: 8000 }
+        //     );
+
+        //     const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
+
+        //     precoGamivo = prices[0].replace('€', '');
+        //     console.log("precoGamivo: " + precoGamivo);
+
+
+
+        // } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta ou outros problemas
+        //     lineToWrite = `F`; // Iremos escrever F
+        // }
+
     } catch (error) {
         console.error(error);
+        return 'F';
         throw new Error('Erro ao consultar site externo.');
     }
 };

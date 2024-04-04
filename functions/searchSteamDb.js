@@ -1,4 +1,14 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
+
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+
+puppeteer.use(
+    AdblockerPlugin({
+        // Optionally enable Cooperative Mode for several request interceptors
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+    })
+)
 
 const searchSteamDb = async (gameString) => {
     try {
@@ -32,7 +42,6 @@ const searchSteamDb = async (gameString) => {
         for (const link of links) {
             const text = await page.evaluate(el => el.textContent, link);
             if (text === gameString) {
-                console.log("Jogo clicado")
                 await link.click();
                 break; // Finaliza o loop pois encontrou o elemento
             }
@@ -50,6 +59,7 @@ const searchSteamDb = async (gameString) => {
         return popularity;
     } catch (error) {
         console.error(error);
+        return "F";
         throw new Error('Erro ao consultar site externo.');
     }
 };

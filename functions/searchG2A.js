@@ -1,7 +1,27 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
 
-const searchGamivo = async (gameString, gameType = "Steam Key", region = "GLOBAL") => {
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+
+puppeteer.use(
+    AdblockerPlugin({
+        // Optionally enable Cooperative Mode for several request interceptors
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+    })
+)
+
+
+
+import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const apiG2aUrl = process.env.apiG2aUrl;
+
+const searchG2A = async (gameString, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite;
+
+    console.log("popularity: " + popularity);
     try {
 
         const browser = await puppeteer.launch({
@@ -27,6 +47,7 @@ const searchGamivo = async (gameString, gameType = "Steam Key", region = "GLOBAL
 
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('a');
+        // console.log(resultados);
 
         for (const link of resultados) {
             const text = await page.evaluate(element => element.textContent, link);
@@ -39,86 +60,35 @@ const searchGamivo = async (gameString, gameType = "Steam Key", region = "GLOBAL
 
         await browser.close();
 
+        const regex = /i(\d+)/;
 
-        const newPuppeteer = async () => { // Segundo puppeteer é ncessário pq a G2A identifica bots e bloqueia o site.
-            const browser = await puppeteer.launch({
-                userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
-                headless: false // Define se o navegador será exibido (false) ou não (true)
-            });
-            const page = await browser.newPage();
+        // Extrai o número do produto do URL usando a expressão regular
+        const match = gameUrl.match(regex);
 
-            await page.setViewport({
-                width: 1920,
-                height: 1080
-            });
+        // Verifica se houve correspondência e extrai o número do produto
+        const productId = match ? match[1] : null;
 
-            await page.goto(gameUrl);
-            // await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 300 segundos para depois fechar o navegador
+        console.log("productId: " + productId);
 
-            const prices = await page.$$(`div[data-locator="ppa-offers-list__price"] span[data-locator="zth-price"]`); // Funciona
-
-            let pricesArray = [];
-            for (const link of prices) { // Loop para percorrer os elementos
-                const price = await page.evaluate(element => element.textContent, link);
-                pricesArray.push(price);
-                // console.log(text);
-
-                // if (text.includes(gameString) && text.includes(gameType) && text.includes(region)) {
-                // console.log("")
-                // break;
-                // }
-            }
-            precoG2A = pricesArray[0].replace('€', '');
-
-            console.log("precoG2A: " + precoG2A);
-            // precoG2A = prices[0].replace('€', '');
-
-            // if (popularity < 30 && precoG2A > 2.00) {
-            //     lineToWrite = `N\t`;
-            // } else {
-            //     lineToWrite = `${precoG2A}\t`;
-            // }
+        const response = await axios.get(`${apiG2aUrl}/g2a/api/products/priceResearcher/${productId}`);
 
 
-        }
+        precoG2A = response.data.menorPreco;
+        console.log(precoG2A);
 
-        if (gameUrl !== "https://www.g2a.com") {
-            await newPuppeteer(gameUrl); // Chama a função newPuppeteer com a URL do jogo
-            return lineToWrite; // Debug
+        if (popularity < 30 && precoG2A > 2.00) {
+            lineToWrite = `N`;
         } else {
-            return "F";
+            lineToWrite = `${precoG2A}`;
         }
-
-        // Itera sobre cada resultado
-
-        try {
-            await page.waitForFunction(
-                'document.querySelectorAll("span.price__value").length > 0',
-                { timeout: 8000 }
-            );
-
-            const prices = await page.$$eval('span.price__value', spans => spans.map(span => span.textContent.trim()));
-
-            precoGamivo = prices[0].replace('€', '');
-            console.log("precoGamivo: " + precoGamivo);
-
-
-            // if (popularity < 30 && precoGamivo > 2.00) {
-            //     lineToWrite = `N\tKINGUIN`;
-            // } else {
-            //     lineToWrite = `${precoGamivo}\tKINGUIN`;
-            // }
-
-        } catch (error) { // Caso o jogo não foi encontrado por conta de alguma digitação incorreta
-            lineToWrite = `F\tKINGUIN`; // Iremos escrever F
-        }
-
+        // lineToWrite = precoG2A; // DEBUG
 
         return lineToWrite;
     } catch (error) {
         console.error(error);
+        return 'F';
         throw new Error('Erro ao consultar site externo.');
     }
 };
 
-export default searchGamivo;
+export default searchG2A;
