@@ -16,15 +16,17 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
+
 const apiG2aUrl = process.env.apiG2aUrl;
+const timeOut = process.env.timeOut;
+let browser;
 
 const searchG2A = async (gameString, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite;
 
-    console.log("popularity: " + popularity);
     try {
 
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
             headless: false // Define se o navegador será exibido (false) ou não (true)
         });
@@ -36,8 +38,8 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
         });
 
 
-        let gameUrl = "https://www.g2a.com";
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F"); // Substitui os espaços em branco por %20, e / por %2F
+        let gameUrl;
+        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F"
 
 
         console.log("searchString: " + searchString);
@@ -53,12 +55,10 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
             const text = await page.evaluate(element => element.textContent, link);
             if (text.includes(gameString) && text.includes(gameType) && text.includes(region)) {
                 gameUrl += await page.evaluate(element => element.getAttribute('href'), link);
-                console.log("Href do link: " + gameUrl);
                 break;
             }
         }
 
-        await browser.close();
 
         const regex = /i(\d+)/;
 
@@ -68,26 +68,30 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
         // Verifica se houve correspondência e extrai o número do produto
         const productId = match ? match[1] : null;
 
-        console.log("productId: " + productId);
-
-        const response = await axios.get(`${apiG2aUrl}/g2a/api/products/priceResearcher/${productId}`);
-
-
-        precoG2A = response.data.menorPreco;
-        console.log(precoG2A);
-
-        if (popularity < 30 && precoG2A > 2.00) {
-            lineToWrite = `N`;
-        } else {
-            lineToWrite = `${precoG2A}`;
+        
+        try {
+            const response = await axios.get(`${apiG2aUrl}/g2a/api/products/priceResearcher/${productId}`);
+            
+            
+            
+            precoG2A = response.data.menorPreco;
+            console.log(precoG2A);
+            
+            if (popularity < 30 && precoG2A > 2.00) {
+                lineToWrite = `N`;
+            } else {
+                lineToWrite = `${precoG2A}`;
+            }
+            // lineToWrite = precoG2A; // DEBUG
+            
+            return lineToWrite;
+        } catch (error) {
+            return "API G2A provavelmente desligada.";   
         }
-        // lineToWrite = precoG2A; // DEBUG
-
-        return lineToWrite;
     } catch (error) {
-        console.error(error);
         return 'F';
-        throw new Error('Erro ao consultar site externo.');
+    } finally {
+        await browser.close();
     }
 };
 

@@ -7,6 +7,7 @@ import fs from 'fs';
 import searchSteamDb from "./functions/searchSteamDb.js";
 import searchGamivo from "./functions/searchGamivo.js";
 import searchG2A from "./functions/searchG2A.js";
+import searchKinguin from "./functions/searchKinguin.js";
 
 // import path from "path";
 
@@ -27,9 +28,9 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             return res.status(400).send('Nenhum arquivo enviado.');
       }
 
+      const hora1 = new Date().toLocaleTimeString();
 
-
-      let gamesToSearch = [], lineToWrite, responseFile = '';
+      let gamesToSearch = [], lineToWrite, responseFile = '', priceGamivo, priceG2A;
       const filePath = req.file.path;
       const fileContent = fs.readFileSync(filePath, 'utf8');
 
@@ -47,44 +48,62 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       }
 
 
+
+      const priceKinguin = await searchKinguin(gamesToSearch[0]);
+
+      console.log("priceKinguin: " + priceKinguin);
+
+
       // O for vai começar aqui passando em todos os gamesToSearch
-      for (let game of gamesToSearch) {
-            console.log("game: " + game);
+      // for (let game of gamesToSearch) {
+      //       console.log("game: " + game);
 
-            const popularity = await searchSteamDb(game);
-            console.log(popularity);
+      //       let popularity = await searchSteamDb(game);
 
-            console.log("Executanto gamivo!");
-            const priceGamivo = await searchGamivo(game, popularity);
-            console.log("priceGamivo: " + priceGamivo);
-
-
-            console.log("Executando G2A");
-            const priceG2A = await searchG2A(game, popularity);
-            console.log("priceG2A: " + priceG2A);
+      //       if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade
+      //             popularity = popularity.replace(',', '.');
+      //             popularity = Number(popularity);
+      //             if (popularity > 0) {
+      //                   // priceGamivo = await searchGamivo(game, popularity);
+      //                   // console.log("priceGamivo: " + priceGamivo);
 
 
-            // Pesquisa kinguin
+      //                   priceG2A = await searchG2A(game, popularity);
+      //                   // console.log("priceG2A: " + priceG2A);
 
-            // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
+      //                   // Pesquisa kinguin
 
-            const fullLine = `${priceG2A}\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Escreve a linha para o txt
-            // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t${popularity}\n`; // Debug só G2A
-            // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
-            console.log(fullLine);
+      //             } else {
+      //                   priceGamivo = 'N';
+      //                   priceG2A = 'N';
+      //                   // priceKinguin = 'N';
+      //             }
+      //       } else { // Jogo tem 0 jogadores nas últimos 24h ou não achou os dados de popularidade
+      //             priceGamivo = 'N';
+      //             priceG2A = 'N';
+      //             // priceKinguin = 'N';
+      //       }
 
-            // Termina o for de cada jogo, deve finalizar de montar o arquivo txt que será enviado
-            responseFile += fullLine;
-      }
+      //       // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
+
+      //       // const fullLine = `${priceG2A}\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Escreve a linha para o txt
+      //       // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
+      //       const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t${popularity}\n`; // Debug só G2A
+      //       console.log(fullLine);
+
+      //       // Termina o for de cada jogo, deve finalizar de montar o arquivo txt que será enviado
+      //       responseFile += fullLine;
+      // }
 
       console.log("responseFile:\n" + responseFile);
 
-      // console.log(searchPopularity); // Debug
-      // res.json('A'); // DEBUG
-      // return;
+      res.json('A'); // DEBUG
+      return;
 
 
       fs.writeFileSync(filePath, responseFile);
+      const hora2 = new Date().toLocaleTimeString();
+      console.log(`Horário de início: ${hora1}, horário de término: ${hora2}`);
 
       res.download(filePath, 'arquivo_modificado.txt', (err) => {
             if (err) {
@@ -94,10 +113,6 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                   fs.unlinkSync(filePath);
             }
       });
-
-      // res.json('A'); // DEBUG
-      // return;
-
 })
 
 const port = process.env.PORT || 5000;
@@ -105,7 +120,3 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
       console.log(`Listening to port ${port}.`);
 })
-
-
-
-// .hack   %2F %2F   G.U.%20Last%20Recode

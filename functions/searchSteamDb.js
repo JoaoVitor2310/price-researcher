@@ -10,11 +10,18 @@ puppeteer.use(
     })
 )
 
+import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
+const timeOut = process.env.timeOut;
+
+let browser;
+
 const searchSteamDb = async (gameString) => {
     try {
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             userDataDir: null,
-            headless: false
+            headless: true
         });
         const page = await browser.newPage();
 
@@ -47,20 +54,20 @@ const searchSteamDb = async (gameString) => {
             }
         }
 
-        await page.waitForSelector('span.num');
+        await page.waitForSelector('span.num', { timeout: timeOut });
         const spans = await page.$$('span.num');
 
         const popularity = await page.evaluate(span => span.textContent.trim(), spans[1]);
         console.log('Pico em 24h:', popularity);
 
-        // await new Promise(resolve => setTimeout(resolve, 3000000)); // Debug, espera 300 segundos para depois fechar o navegador
+        // await new Promise(resolve => setTimeout(resolve,  10000)); // Debug, espera 300 segundos para depois fechar o navegador
 
-        await browser.close();
         return popularity;
     } catch (error) {
-        console.error(error);
         return "F";
-        throw new Error('Erro ao consultar site externo.');
+    } finally {
+        await browser.close();
+
     }
 };
 
