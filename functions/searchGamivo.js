@@ -49,49 +49,51 @@ const searchGamivo = async (gameString, popularity) => {
 
         for (const resultado of resultados) {
             // Obtém o texto do elemento "span" com a classe "ng-star-inserted" dentro do resultado
-            const nomeDoJogo = await resultado.$eval('span.ng-star-inserted', element => element.textContent);
+            let nomeDoJogo = await resultado.$eval('span.ng-star-inserted', element => element.textContent);
+
+            nomeDoJogo = nomeDoJogo.replace(/[:\-]/g, '').toLowerCase(); // Remove ":" e "-" e coloca tudo em diminutivo para reconhecer melhor os jogos
+            gameString = gameString.replace(/[:\-]/g, '').toLowerCase();
 
             // Verifica se o texto do jogo contém a palavra "Steam"
-            if (nomeDoJogo.toLowerCase().includes(gameString.toLowerCase())) {
-                const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i');
-                if (regex.test(nomeDoJogo)) {
+            if (nomeDoJogo.includes(gameString)) {
+                const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // nome do jogo - região - Global
+                const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Nome do jogo - Global Steam
+
+                if (regex.test(nomeDoJogo) || regex2.test(nomeDoJogo)) {
                     // Clica no resultado
 
                     const elementoLink = await resultado.$('a');
                     const href = await (await elementoLink.getProperty('href')).jsonValue();
-                    console.log("href: " + href);
 
                     const startIndex = href.indexOf('/product/') + '/product/'.length;
                     productString = href.substring(startIndex);
-                    
+
                     break; // Encerra o loop depois de clicar em um resultado
                 }
             }
         }
-        
-        
-        if(productString){
-            console.log("productString: " + productString);
-           
+
+
+        if (productString) {
             try {
                 const response = await axios.get(`${apiGamivoUrl}/api/products/priceResearcher/${productString}`); // Colocar um try aqui p saber qnd o erro for aqui
-                
+
                 const precoGamivo = response.data.menorPreco;
-        
+
                 // if (popularity < 30 && precoGamivo > 2.00) {
                 //     lineToWrite = `N`;
                 // } else {
-                    lineToWrite = precoGamivo;
+                lineToWrite = precoGamivo;
                 // }
-                
+
             } catch (error) {
                 return "API Gamivo desligada";
             }
-           
-        }else{
+
+        } else {
             return "F";
         }
-        
+
 
         return lineToWrite;
 
