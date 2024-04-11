@@ -10,8 +10,6 @@ puppeteer.use(
     })
 )
 
-
-
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -84,7 +82,7 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
             }
             // lineToWrite = precoG2A; // DEBUG
             
-            return lineToWrite;
+            return lineToWrite.replace('.', ',');
         } catch (error) {
             return "API G2A provavelmente desligada.";   
         }

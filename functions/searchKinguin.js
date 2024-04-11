@@ -31,29 +31,35 @@ const searchKinguin = async (gameString) => {
         });
 
         let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F"
-        let elementoClicado = false;
+        let elementoClicado = false, gameName;
 
         await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`);
 
         const games = await page.$$eval('h3[title]', h3s => h3s.map(h3 => h3.textContent)); // Separa o nome dos jogos
 
-        for (const game of games) { // Entra na página do jogo
+        for (const game of games) { // For para entrar na página do jogo
             if (game.includes('Steam CD Key')) {
-                // Extrai a parte da string até "Steam CD Key"
-                const gameName = game.substring(0, game.indexOf('Steam CD Key')).trim();
+
+                gameName = game.substring(0, game.indexOf('Steam CD Key')).trim(); // Extrai a parte da string até "Steam CD Key"
+
+                gameName = gameName.replace(/[:\-]/g, '').toLowerCase(); // Remove ":" e "-" e coloca tudo em diminutivo para reconhecer melhor os jogos
+                gameString = gameString.replace(/[:\-]/g, '').toLowerCase();
 
                 if (gameName == gameString) {
-                    await page.click(`h3[title="${game}"]`);
+                    await page.waitForSelector(`h3[title="${game}"]`, { timeout: timeOut });
+                    await page.click(`h3[title="${game}"]`); // As vezes aqui é o suficiente
 
-                    const selector = `h3[title="${game}"]`;
+                    const selector = `h3[title="${game}"]`; // As vezes precisa clicar por aqui
                     await page.evaluate((selector) => {
                         const element = document.querySelector(selector);
                         if (element) {
                             element.click();
-                            elementoClicado = true;
+                        } else {
+                            console.log('Não encontrado');
                         }
                     }, selector);
 
+                    elementoClicado = true;
                     break;
 
                 }
@@ -92,37 +98,99 @@ const searchKinguin = async (gameString) => {
         await page.waitForSelector('em.sc-o4ugwn-12');
         await page.$eval('em.sc-o4ugwn-12', emElement => emElement.click()); // Clica em EUR
 
-        await page.waitForSelector('div.offer-item-wrapper span[content]');
-        const values = await page.$$eval('div.offer-item-wrapper span[content]', spans => spans.map(span => span.getAttribute('content')));
-        values.splice(0, 2);
+        let values;
+
+        await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut }).catch(() => { });
+        const elementoPresente = await page.$('div.offer-item-wrapper span[content]');
+        if (elementoPresente) {
+            // Se o elemento estiver presente, espera até que o seletor esteja presente com o timeout especificado
+            await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut });
+            values = await page.$$eval('div.offer-item-wrapper span[content]', spans => spans.map(span => span.getAttribute('content')));
+            values.splice(0, 2);
+        } else { // Só tem um vendedor, o preço vai aparecer só lá em cima na página
+            console.log('Só tem um vendedor');
+            await page.waitForSelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price', { timeout: timeOut });
+
+            const textoSegundoSpan = await page.evaluate(() => {
+                const secondSpan = document.querySelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price > span:nth-child(2)');
+                if (secondSpan) {
+                    return secondSpan.textContent.trim();
+                } else {
+                    return null;
+                }
+            });
+
+            values = textoSegundoSpan.replace('€', '').replace('.', ','); // Remove o símbolo de euro
+        }
+
+        // return 'A'; // Debug
+
+
+        let prices;
+        if (Array.isArray(values)) { // Mais de um vendedor
+            prices = values.filter(value => value !== "EUR");
+            const menorPreco = prices[0];
+            const segundoMenorPreco = prices[1];
+            let finalPrice = 0;
+    
+            if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
+                const diferenca = segundoMenorPreco - menorPreco;
+                const dezPorCentoSegundoMenorPreco = 0.1 * segundoMenorPreco;
+    
+                if (diferenca >= dezPorCentoSegundoMenorPreco) {
+                    console.log('SAMFITEIRO!');
+                    finalPrice = segundoMenorPreco - 0.01;
+                } else {
+                    finalPrice = menorPreco - 0.01;
+                    // return finalPrice.toFixed(2).replace('.', ',');
+                }
+                return finalPrice.toFixed(2).replace('.', ',');
+            } else { 
+                finalPrice = menorPreco - 0.01;
+                return finalPrice.toFixed(2).replace('.', ',');
+            }
+        } else { // Um vendedor
+            return values;
+        }
+        
 
         // Suponha que values seja o seu array
-        const prices = values.filter(value => value !== "EUR");
 
         console.log(prices);
 
-        const menorPreco = prices[0];
-        const segundoMenorPreco = prices[1];
-        let finalPrice = 0;
 
-        if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
-            const diferenca = segundoMenorPreco - menorPreco;
-            const dezPorCentoSegundoMenorPreco = 0.1 * segundoMenorPreco;
+        // await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut });
+        // const values = await page.$$eval('div.offer-item-wrapper span[content]', spans => spans.map(span => span.getAttribute('content')));
+        // values.splice(0, 2);
+        // console.log(values);
 
-            if (diferenca >= dezPorCentoSegundoMenorPreco) {
-                console.log('SAMFITEIRO!');
-                finalPrice = segundoMenorPreco - 0.01;
-                return finalPrice.toFixed(2);
-            } else {
-                finalPrice = menorPreco - 0.01;
-                return finalPrice.toFixed(2);
-            }
-        }else{
-            finalPrice = menorPreco - 0.01;
-            return finalPrice.toFixed(2);
-        }
+        // // Suponha que values seja o seu array
+        // const prices = values.filter(value => value !== "EUR");
+
+        // console.log(prices);
+
+        // const menorPreco = prices[0];
+        // const segundoMenorPreco = prices[1];
+        // let finalPrice = 0;
+
+        // if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
+        //     const diferenca = segundoMenorPreco - menorPreco;
+        //     const dezPorCentoSegundoMenorPreco = 0.1 * segundoMenorPreco;
+
+        //     if (diferenca >= dezPorCentoSegundoMenorPreco) {
+        //         console.log('SAMFITEIRO!');
+        //         finalPrice = segundoMenorPreco - 0.01;
+        //         return finalPrice.toFixed(2);
+        //     } else {
+        //         finalPrice = menorPreco - 0.01;
+        //         return finalPrice.toFixed(2);
+        //     }
+        // } else {
+        //     finalPrice = menorPreco - 0.01;
+        //     return finalPrice.toFixed(2);
+        // }
     } catch (error) {
-        // console.log(error);
+        console.log(error);
         return 'F';
     } finally {
         await browser.close();
@@ -133,7 +201,7 @@ const searchKinguin = async (gameString) => {
 
 const rejectCookies = async (page) => {
     // Aguarda até que o seletor esteja presente, mas não gera erro se não estiver
-    await page.waitForSelector('#onetrust-reject-all-handler', { timeout: 0 }).catch(() => {});
+    await page.waitForSelector('#onetrust-reject-all-handler', { timeout: 0 }).catch(() => { });
 
     // Verifica se o botão de aceitar cookies está presente
     const rejectButton = await page.$('#onetrust-reject-all-handler');
@@ -141,7 +209,7 @@ const rejectCookies = async (page) => {
     // Se o botão de aceitar cookies estiver presente, clique nele
     if (rejectButton) {
         await rejectButton.click();
-        console.log('Cookie aceito');
+        // console.log('Cookies negados.');
     }
 }
 

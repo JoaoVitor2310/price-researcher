@@ -56,8 +56,8 @@ const searchGamivo = async (gameString, popularity) => {
 
             // Verifica se o texto do jogo contém a palavra "Steam"
             if (nomeDoJogo.includes(gameString)) {
-                const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // nome do jogo - região - Global
-                const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Nome do jogo - Global Steam
+                const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // Padrão: nome do jogo - região - Global
+                const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Padrão: Nome do jogo - Global Steam
 
                 if (regex.test(nomeDoJogo) || regex2.test(nomeDoJogo)) {
                     // Clica no resultado
@@ -80,11 +80,12 @@ const searchGamivo = async (gameString, popularity) => {
 
                 const precoGamivo = response.data.menorPreco;
 
-                // if (popularity < 30 && precoGamivo > 2.00) {
-                //     lineToWrite = `N`;
-                // } else {
+                popularity = 31; // Debug
+                if (popularity < 30 && precoGamivo > 2.00) {
+                    lineToWrite = `N`;
+                } else {
                 lineToWrite = precoGamivo;
-                // }
+                }
 
             } catch (error) {
                 return "API Gamivo desligada";
@@ -95,7 +96,7 @@ const searchGamivo = async (gameString, popularity) => {
         }
 
 
-        return lineToWrite;
+        return lineToWrite.replace('.', ',');
 
     } catch (error) {
         return 'F';

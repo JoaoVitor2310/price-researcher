@@ -56,41 +56,37 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
       for (let game of gamesToSearch) {
             console.log("game: " + game);
 
-            // let popularity = await searchSteamDb(game);
-            let popularity = 2; // Debug
+            let popularity = await searchSteamDb(game);
+            // let popularity = 2; // Debug
 
             if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade
                   // popularity = popularity.replace(',', '.');
                   // popularity = Number(popularity);
                   if (popularity > 0) {
-                        // priceGamivo = await searchGamivo(game, popularity);
+                        priceGamivo = await searchGamivo(game, popularity);
                         // priceGamivo = await searchGamivo(game); // Debug sem popularidade
-
 
                         // priceG2A = await searchG2A(game, popularity);
 
-                        // Pesquisa kinguin
-                        priceKinguin = await searchKinguin(game);
-
-                        console.log("priceKinguin: " + priceKinguin);
+                        // priceKinguin = await searchKinguin(game);
 
                   } else {
                         priceGamivo = 'N';
                         priceG2A = 'N';
-                        // priceKinguin = 'N';
+                        priceKinguin = 'N';
                   }
             } else { // Jogo tem 0 jogadores nas últimos 24h ou não achou os dados de popularidade
                   priceGamivo = 'N';
                   priceG2A = 'N';
-                  // priceKinguin = 'N';
+                  priceKinguin = 'N';
             }
 
             // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
 
             // const fullLine = `${priceG2A}\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Escreve a linha para o txt
-            // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
+            const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
             // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t${popularity}\n`; // Debug só G2A
-            const fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t${popularity}\n`; // Debug só Kinguin
+            // const fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t${popularity}\n`; // Debug só Kinguin
             console.log(fullLine);
 
             // Termina o for de cada jogo, deve finalizar de montar o arquivo txt que será enviado
@@ -99,8 +95,8 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
       console.log("responseFile:\n" + responseFile);
 
-      res.json('A'); // DEBUG
-      return;
+      // res.json('A'); // DEBUG
+      // return;
 
 
       fs.writeFileSync(filePath, responseFile);

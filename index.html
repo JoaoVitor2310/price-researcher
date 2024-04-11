@@ -10,14 +10,21 @@
 
 <body>
     <h1>Price Researcher</h1>
-    <p>Envie um arquivo .txt (bloco de notas) SOMENTE com o nome do jogo em cada linha, evite também colocar espaços em
-        branco no início e no final.</p>
+    <h3>Envie um arquivo .txt (bloco de notas) SOMENTE com o nome do jogo em cada linha, evite também colocar espaços em
+        branco no início e no final.</h3>
+        <p><strong>Atenção: </strong>Tente enviar o jogo escrito da melhor forma possível, cada caractere pode afetar o resultado final. </p>
+        <p><strong>OBS: </strong>O price não é perfeito, pode haver jogos que valham a pena conferir o resultado, como os seguintes exemplos: </p>
+        <br>     
+        <p>Se tiver uma boa popularidade e não achar o preço do jogo. </p>
+        <br>
+        <p>Se achar em uma plataforma e não achar em outra. </p>
     <form id="uploadForm">
         <input type="file" name="fileToUpload" id="fileToUpload">
         <br>
         <br>
         <input type="button" value="Enviar Arquivo" onclick="uploadFile()">
     </form>
+    <h2>Legenda:</h2>
     <p><strong>F: </strong> Jogo que não foi possível achar na plataforma, provavelmente por ter algum caracter
         diferenciado.</p>
     <p><strong>N: </strong> Jogo que possui pico menor que 30 jogadores nas últimas 24h na steam.</p>
