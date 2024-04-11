@@ -47,28 +47,31 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             }
       }
 
-
-      // priceKinguin = await searchKinguin(gamesToSearch[0]);
-      // console.log("priceKinguin: " + priceKinguin);
-
-
       // O for vai começar aqui passando em todos os gamesToSearch
       for (let game of gamesToSearch) {
             console.log("game: " + game);
 
             let popularity = await searchSteamDb(game);
+            let priceGamivo, priceG2A, priceKinguin;
             // let popularity = 2; // Debug
 
             if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade
-                  // popularity = popularity.replace(',', '.');
-                  // popularity = Number(popularity);
+                  popularity = popularity.replace(',', '.');
+                  popularity = Number(popularity);
                   if (popularity > 0) {
-                        priceGamivo = await searchGamivo(game, popularity);
-                        // priceGamivo = await searchGamivo(game); // Debug sem popularidade
+                        // priceGamivo = await searchGamivo(game, popularity);
 
                         // priceG2A = await searchG2A(game, popularity);
 
                         // priceKinguin = await searchKinguin(game);
+
+                        const promise1 = searchGamivo(game, popularity);
+                        const promise2 = searchG2A(game, popularity);
+                        const promise3 = searchKinguin(game);
+
+                        // Executar as três funções simultaneamente
+                        [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
+
 
                   } else {
                         priceGamivo = 'N';
@@ -83,8 +86,8 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
             // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
 
-            // const fullLine = `${priceG2A}\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Escreve a linha para o txt
-            const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
+            const fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t${popularity}\n`; // Escreve a linha para o txt
+            // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t${popularity}\n`; // Debug só Gamivo
             // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t${popularity}\n`; // Debug só G2A
             // const fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t${popularity}\n`; // Debug só Kinguin
             console.log(fullLine);

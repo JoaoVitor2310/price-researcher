@@ -14,13 +14,13 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
-
 const apiG2aUrl = process.env.apiG2aUrl;
 const timeOut = process.env.timeOut;
-let browser;
+
+import clearString from './helpers/clearString.js';
 
 const searchG2A = async (gameString, popularity, gameType = "Steam Key", region = "GLOBAL") => {
-    let precoG2A, lineToWrite;
+    let precoG2A, lineToWrite, browser;
 
     try {
 
@@ -37,11 +37,11 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
 
 
         let gameUrl;
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F"
+
+        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, ''); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
 
 
-        console.log("searchString: " + searchString);
-        // await page.goto(`https://www.g2a.com/pt/aquatico-pc-steam-key-global-i10000337842001`);
+        // console.log("searchString: " + searchString);
         await page.goto(`https://www.g2a.com/pt/search?query=${searchString}`);
 
 
@@ -50,8 +50,12 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
         // console.log(resultados);
 
         for (const link of resultados) {
-            const text = await page.evaluate(element => element.textContent, link);
-            if (text.includes(gameString) && text.includes(gameType) && text.includes(region)) {
+            let gameName = await page.evaluate(element => element.textContent, link);
+
+            gameName = clearString(gameName);
+            gameString = clearString(gameString);
+
+            if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
                 gameUrl += await page.evaluate(element => element.getAttribute('href'), link);
                 break;
             }
@@ -66,25 +70,24 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
         // Verifica se houve correspondência e extrai o número do produto
         const productId = match ? match[1] : null;
 
-        
+
         try {
             const response = await axios.get(`${apiG2aUrl}/g2a/api/products/priceResearcher/${productId}`);
-            
-            
-            
+
+
+
             precoG2A = response.data.menorPreco;
-            console.log(precoG2A);
-            
-            if (popularity < 30 && precoG2A > 2.00) {
-                lineToWrite = `N`;
-            } else {
-                lineToWrite = `${precoG2A}`;
-            }
+
+            // if (popularity < 30 && precoG2A > 2.00) {
+            //     lineToWrite = `N`;
+            // } else {
+            lineToWrite = `${precoG2A}`;
+            // }
             // lineToWrite = precoG2A; // DEBUG
-            
+
             return lineToWrite.replace('.', ',');
         } catch (error) {
-            return "API G2A provavelmente desligada.";   
+            return "API G2A provavelmente desligada.";
         }
     } catch (error) {
         return 'F';

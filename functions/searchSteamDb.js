@@ -13,11 +13,13 @@ puppeteer.use(
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
+
 const timeOut = process.env.timeOut;
 
-let browser;
+import clearString from './helpers/clearString.js';
 
 const searchSteamDb = async (gameString) => {
+    let browser;
     try {
         browser = await puppeteer.launch({
             userDataDir: null,
@@ -47,8 +49,12 @@ const searchSteamDb = async (gameString) => {
         const links = await page.$$('a');
 
         for (const link of links) {
-            const text = await page.evaluate(el => el.textContent, link);
-            if (text === gameString) {
+            let gameName = await page.evaluate(el => el.textContent, link);
+            
+            gameName = clearString(gameName);
+            gameString = clearString(gameString);
+
+            if (gameName === gameString) {
                 await link.click();
                 break; // Finaliza o loop pois encontrou o elemento
             }

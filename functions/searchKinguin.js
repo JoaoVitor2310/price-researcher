@@ -14,9 +14,11 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 const timeOut = process.env.timeOut;
-let browser;
+
+import clearString from './helpers/clearString.js';
 
 const searchKinguin = async (gameString) => {
+    let browser;
 
     try {
         browser = await puppeteer.launch({
@@ -30,7 +32,8 @@ const searchKinguin = async (gameString) => {
             height: 1080
         });
 
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F"
+        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, ''); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
+
         let elementoClicado = false, gameName;
 
         await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`);
@@ -42,8 +45,8 @@ const searchKinguin = async (gameString) => {
 
                 gameName = game.substring(0, game.indexOf('Steam CD Key')).trim(); // Extrai a parte da string até "Steam CD Key"
 
-                gameName = gameName.replace(/[:\-]/g, '').toLowerCase(); // Remove ":" e "-" e coloca tudo em diminutivo para reconhecer melhor os jogos
-                gameString = gameString.replace(/[:\-]/g, '').toLowerCase();
+                gameName = clearString(gameName);
+                gameString = clearString(gameString);
 
                 if (gameName == gameString) {
                     await page.waitForSelector(`h3[title="${game}"]`, { timeout: timeOut });
@@ -132,63 +135,27 @@ const searchKinguin = async (gameString) => {
             const menorPreco = prices[0];
             const segundoMenorPreco = prices[1];
             let finalPrice = 0;
-    
+
             if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
                 const diferenca = segundoMenorPreco - menorPreco;
                 const dezPorCentoSegundoMenorPreco = 0.1 * segundoMenorPreco;
-    
+
                 if (diferenca >= dezPorCentoSegundoMenorPreco) {
                     console.log('SAMFITEIRO!');
                     finalPrice = segundoMenorPreco - 0.01;
                 } else {
                     finalPrice = menorPreco - 0.01;
-                    // return finalPrice.toFixed(2).replace('.', ',');
                 }
                 return finalPrice.toFixed(2).replace('.', ',');
-            } else { 
+            } else {
                 finalPrice = menorPreco - 0.01;
                 return finalPrice.toFixed(2).replace('.', ',');
             }
         } else { // Um vendedor
             return values;
         }
-        
-
-        // Suponha que values seja o seu array
-
-        console.log(prices);
 
 
-        // await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut });
-        // const values = await page.$$eval('div.offer-item-wrapper span[content]', spans => spans.map(span => span.getAttribute('content')));
-        // values.splice(0, 2);
-        // console.log(values);
-
-        // // Suponha que values seja o seu array
-        // const prices = values.filter(value => value !== "EUR");
-
-        // console.log(prices);
-
-        // const menorPreco = prices[0];
-        // const segundoMenorPreco = prices[1];
-        // let finalPrice = 0;
-
-        // if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
-        //     const diferenca = segundoMenorPreco - menorPreco;
-        //     const dezPorCentoSegundoMenorPreco = 0.1 * segundoMenorPreco;
-
-        //     if (diferenca >= dezPorCentoSegundoMenorPreco) {
-        //         console.log('SAMFITEIRO!');
-        //         finalPrice = segundoMenorPreco - 0.01;
-        //         return finalPrice.toFixed(2);
-        //     } else {
-        //         finalPrice = menorPreco - 0.01;
-        //         return finalPrice.toFixed(2);
-        //     }
-        // } else {
-        //     finalPrice = menorPreco - 0.01;
-        //     return finalPrice.toFixed(2);
-        // }
     } catch (error) {
         console.log(error);
         return 'F';
