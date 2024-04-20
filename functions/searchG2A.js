@@ -18,8 +18,9 @@ const apiG2aUrl = process.env.apiG2aUrl;
 const timeOut = process.env.timeOut;
 
 import clearString from './helpers/clearString.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
 
-const searchG2A = async (gameString, popularity, gameType = "Steam Key", region = "GLOBAL") => {
+const searchG2A = async (gameString, minPopularity, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite, browser;
 
     try {
@@ -47,7 +48,6 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
 
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('a');
-        // console.log(resultados);
 
         for (const link of resultados) {
             let gameName = await page.evaluate(element => element.textContent, link);
@@ -55,7 +55,10 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
             gameName = clearString(gameName);
             gameString = clearString(gameString);
 
-            if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
+            const gameStringPattern = new RegExp(`\\b${gameString}\\b`, 'i');
+
+            // if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
+            if (gameStringPattern.test(gameName) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
                 gameUrl += await page.evaluate(element => element.getAttribute('href'), link);
                 break;
             }
@@ -74,22 +77,16 @@ const searchG2A = async (gameString, popularity, gameType = "Steam Key", region 
         try {
             const response = await axios.get(`${apiG2aUrl}/g2a/api/products/priceResearcher/${productId}`);
 
-
-
             precoG2A = response.data.menorPreco;
 
-            // if (popularity < 30 && precoG2A > 2.00) {
-            //     lineToWrite = `N`;
-            // } else {
-            lineToWrite = `${precoG2A}`;
-            // }
-            // lineToWrite = precoG2A; // DEBUG
-
-            return lineToWrite.replace('.', ',');
+            return worthyByPopularity(precoG2A, minPopularity, popularity);
         } catch (error) {
+            console.log(error);
             return "API G2A provavelmente desligada.";
         }
     } catch (error) {
+        // console.log(error);
+        // console.log('Ou o timeout tá mt rápido e não dá tempo de carregar a página');
         return 'F';
     } finally {
         await browser.close();

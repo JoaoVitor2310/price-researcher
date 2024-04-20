@@ -43,7 +43,6 @@ const searchSteamDb = async (gameString) => {
         await inputElement.type(gameString);
         await inputElement.press('Enter');
 
-
         await page.waitForNavigation();
 
         const links = await page.$$('a');
@@ -53,6 +52,9 @@ const searchSteamDb = async (gameString) => {
             
             gameName = clearString(gameName);
             gameString = clearString(gameString);
+            
+            // console.log("gameName: " + gameName); // Debug
+            // console.log("gameString: " + gameString);
 
             if (gameName === gameString) {
                 await link.click();
@@ -64,12 +66,13 @@ const searchSteamDb = async (gameString) => {
         const spans = await page.$$('span.num');
 
         const popularity = await page.evaluate(span => span.textContent.trim(), spans[1]);
-        console.log('Pico em 24h:', popularity);
+        // console.log('Pico em 24h:', popularity);
 
         // await new Promise(resolve => setTimeout(resolve,  10000)); // Debug, espera 300 segundos para depois fechar o navegador
 
         return popularity;
     } catch (error) {
+        // console.log(error);
         return "F";
     } finally {
         await browser.close();

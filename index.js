@@ -28,13 +28,21 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             return res.status(400).send('Nenhum arquivo enviado.');
       }
 
-      const hora1 = new Date().toLocaleTimeString();
+
+      const horaAtual = new Date();
+      const options = { timeZone: 'America/Sao_Paulo', hour12: false };
+      const hora1 = horaAtual.toLocaleTimeString('pt-BR', options);
+
+      // const hora1 = new Date().toLocaleTimeString();
 
       let gamesToSearch = [], lineToWrite, responseFile = '', priceGamivo, priceG2A, priceKinguin;
       const filePath = req.file.path;
       const fileContent = fs.readFileSync(filePath, 'utf8');
 
       const lines = fileContent.split('\n');
+
+      const minPopularity = lines[0]; // Primeira posição será a popularidade mínima
+      lines.shift(); // Iremos retirar a popularidade do array
 
       // Iterar sobre as linhas e armazenar o conteúdo no array gamesToSearch
       for (const line of lines) {
@@ -47,32 +55,35 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             }
       }
 
+
       // O for vai começar aqui passando em todos os gamesToSearch
       for (let game of gamesToSearch) {
             console.log("game: " + game);
-
             let popularity = await searchSteamDb(game);
             let priceGamivo, priceG2A, priceKinguin;
-            // let popularity = 2; // Debug
+            // let popularity = 2,442; // Debug
 
             if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade
                   popularity = popularity.replace(',', '.');
-                  popularity = Number(popularity);
+                  // popularity = parseFloat(popularity);
+
+                  let popularityNumber = parseFloat(popularity);
+                  let decimalPlaces = (popularity.split('.')[1] || '').length;
+                  popularity = popularityNumber.toFixed(decimalPlaces);
+
                   if (popularity > 0) {
-                        // priceGamivo = await searchGamivo(game, popularity);
+                        // priceGamivo = await searchGamivo(game, minPopularity, popularity);
 
-                        // priceG2A = await searchG2A(game, popularity);
+                        // priceG2A = await searchG2A(game, minPopularity, popularity);
 
-                        // priceKinguin = await searchKinguin(game);
+                        // priceKinguin = await searchKinguin(game, minPopularity, popularity);
 
-                        const promise1 = searchGamivo(game, popularity);
-                        const promise2 = searchG2A(game, popularity);
-                        const promise3 = searchKinguin(game);
+                        const promise1 = searchGamivo(game, minPopularity, popularity);
+                        const promise2 = searchG2A(game, minPopularity, popularity);
+                        const promise3 = searchKinguin(game, minPopularity, popularity);
 
-                        // Executar as três funções simultaneamente
+                        // // Executar as três funções simultaneamente
                         [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
-
-
                   } else {
                         priceGamivo = 'N';
                         priceG2A = 'N';
@@ -83,7 +94,6 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                   priceG2A = 'N';
                   priceKinguin = 'N';
             }
-
             // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
 
             const fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t${popularity}\n`; // Escreve a linha para o txt
@@ -103,14 +113,16 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
 
       fs.writeFileSync(filePath, responseFile);
-      const hora2 = new Date().toLocaleTimeString();
+      const hora2 = horaAtual.toLocaleTimeString('pt-BR', options);
       console.log(`Horário de início: ${hora1}, horário de término: ${hora2}`);
 
-      res.download(filePath, 'arquivo_modificado.txt', (err) => {
+      res.download(filePath, 'resultado-price-researcher.txt', (err) => {
+            // Verifica se houve algum erro durante o download
             if (err) {
                   console.error('Erro ao fazer o download do arquivo:', err);
+                  fs.unlinkSync(filePath);
             } else {
-                  // Exclui o arquivo após o download
+                  // Se o download for bem-sucedido, exclui o arquivo
                   fs.unlinkSync(filePath);
             }
       });

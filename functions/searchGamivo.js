@@ -19,8 +19,9 @@ const timeOut = process.env.timeOut;
 const apiGamivoUrl = process.env.apiGamivoUrl;
 
 import clearString from './helpers/clearString.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
 
-const searchGamivo = async (gameString, popularity) => {
+const searchGamivo = async (gameString, minPopularity, popularity) => {
     let precoGamivo, lineToWrite, productString, browser;
     try {
         browser = await puppeteer.launch({
@@ -82,15 +83,16 @@ const searchGamivo = async (gameString, popularity) => {
 
                 // popularity = 31; // Debug
                 // if (popularity < 30 && precoGamivo > 2.00) {
-                // lineToWrite = `N`;
+                //     lineToWrite = `N`;
                 // } else {
-                lineToWrite = precoGamivo;
+                //     lineToWrite = precoGamivo;
                 // }
+
+                lineToWrite = worthyByPopularity(precoGamivo, minPopularity, popularity);
 
             } catch (error) {
                 return "API Gamivo desligada";
             }
-
         } else {
             return "F";
         }
@@ -99,6 +101,8 @@ const searchGamivo = async (gameString, popularity) => {
         return lineToWrite.replace('.', ',');
 
     } catch (error) {
+        // console.log(error);
+        // console.log('Ou o timeout tá mt rápido e não dá tempo de carregar a página');
         return 'F';
     } finally {
         await browser.close();

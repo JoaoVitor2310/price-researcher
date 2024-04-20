@@ -16,8 +16,9 @@ dotenv.config();
 const timeOut = process.env.timeOut;
 
 import clearString from './helpers/clearString.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
 
-const searchKinguin = async (gameString) => {
+const searchKinguin = async (gameString, minPopularity, popularity) => {
     let browser;
 
     try {
@@ -96,11 +97,9 @@ const searchKinguin = async (gameString) => {
             }
         });
 
-
-
         await page.waitForSelector('em.sc-o4ugwn-12');
         await page.$eval('em.sc-o4ugwn-12', emElement => emElement.click()); // Clica em EUR
-
+        
         let values;
 
         await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut }).catch(() => { });
@@ -113,7 +112,7 @@ const searchKinguin = async (gameString) => {
         } else { // Só tem um vendedor, o preço vai aparecer só lá em cima na página
             console.log('Só tem um vendedor');
             await page.waitForSelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price', { timeout: timeOut });
-
+            
             const textoSegundoSpan = await page.evaluate(() => {
                 const secondSpan = document.querySelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price > span:nth-child(2)');
                 if (secondSpan) {
@@ -122,7 +121,7 @@ const searchKinguin = async (gameString) => {
                     return null;
                 }
             });
-
+            
             values = textoSegundoSpan.replace('€', '').replace('.', ','); // Remove o símbolo de euro
         }
 
@@ -134,7 +133,7 @@ const searchKinguin = async (gameString) => {
             prices = values.filter(value => value !== "EUR");
             const menorPreco = prices[0];
             const segundoMenorPreco = prices[1];
-            let finalPrice = 0;
+            let finalPrice = 0, lineToWrite;
 
             if (segundoMenorPreco > 1.0) { // Lógica para os samfiteiros
                 const diferenca = segundoMenorPreco - menorPreco;
@@ -146,18 +145,23 @@ const searchKinguin = async (gameString) => {
                 } else {
                     finalPrice = menorPreco - 0.01;
                 }
-                return finalPrice.toFixed(2).replace('.', ',');
+
+                lineToWrite = worthyByPopularity(finalPrice, minPopularity, popularity);
+                
+                return lineToWrite;
             } else {
                 finalPrice = menorPreco - 0.01;
-                return finalPrice.toFixed(2).replace('.', ',');
+                lineToWrite = worthyByPopularity(finalPrice, minPopularity, popularity);
+                return lineToWrite;
             }
         } else { // Um vendedor
-            return values;
+            lineToWrite = worthyByPopularity(values, minPopularity, popularity);
+            return lineToWrite;
         }
 
-
     } catch (error) {
-        console.log(error);
+        // console.log(error);
+        // console.log('Ou o timeout tá mt rápido e não dá tempo de carregar a página');
         return 'F';
     } finally {
         await browser.close();

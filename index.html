@@ -12,18 +12,22 @@
     <h1>Price Researcher</h1>
     <h3>Envie um arquivo .txt (bloco de notas) SOMENTE com o nome do jogo em cada linha, evite também colocar espaços em
         branco no início e no final.</h3>
-        <p><strong>Atenção: </strong>Tente enviar o jogo escrito da melhor forma possível, cada caractere pode afetar o resultado final. </p>
-        <p><strong>OBS: </strong>O price não é perfeito, pode haver jogos que valham a pena conferir o resultado, como os seguintes exemplos: </p>
-        <br>     
-        <p>Se tiver uma boa popularidade e não achar o preço do jogo. </p>
-        <br>
-        <p>Se achar em uma plataforma e não achar em outra. </p>
+    <p><strong>Atenção: </strong>Tente enviar o jogo escrito da melhor forma possível, cada caractere pode afetar o
+        resultado final. </p>
+    <p><strong>OBS: </strong>O price não é perfeito, pode haver jogos que valham a pena conferir o resultado, como os
+        seguintes exemplos: </p>
+    <p>Se tiver uma boa popularidade e não achar o preço do jogo. </p>
+    <p>Se achar em uma plataforma e não achar em outra. </p>
     <form id="uploadForm">
         <input type="file" name="fileToUpload" id="fileToUpload">
         <br>
         <br>
-        <input type="button" value="Enviar Arquivo" onclick="uploadFile()">
+        <input type="button" value="Enviar Arquivo" onclick="uploadFile()" id="uploadButton">
     </form>
+    <div id="loadingIndicator" style="display: none;">
+        Carregando... <!-- Você pode personalizar a mensagem de carregamento conforme necessário -->
+        <div class="loader"></div> <!-- Adicione uma animação de carregamento (a mesma usada anteriormente) -->
+    </div>
     <h2>Legenda:</h2>
     <p><strong>F: </strong> Jogo que não foi possível achar na plataforma, provavelmente por ter algum caracter
         diferenciado.</p>
@@ -40,6 +44,10 @@
                 return;
             }
 
+            document.getElementById('uploadButton').disabled = true; // Desabilita o botão para evitar spam de request e obrigar a esperar
+            document.getElementById('loadingIndicator').style.display = 'block'; // Mostra o indicador de carregamento
+
+
             const formData = new FormData();
             formData.append('fileToUpload', file);
 
@@ -48,6 +56,8 @@
                     method: 'POST',
                     body: formData
                 });
+
+                document.getElementById('loadingIndicator').style.display = 'none';
 
                 if (response.error) {
                     console.error('Erro:', error);
@@ -82,6 +92,10 @@
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao enviar arquivo.');
+                document.getElementById('loadingIndicator').style.display = 'none'; // Ocultar o indicador de carregamento em caso de erro
+            } finally {
+                // Garantir que o botão seja habilitado novamente mesmo em caso de erro
+                document.getElementById('uploadButton').disabled = false;
             }
         }
 
@@ -91,4 +105,9 @@
     </script>
 </body>
 
+<style>
+    *{
+        font-family: sans-serif;
+    }
+</style>
 </html>
