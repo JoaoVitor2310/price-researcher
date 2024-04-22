@@ -23,8 +23,10 @@ const searchSteamDb = async (gameString) => {
     try {
         browser = await puppeteer.launch({
             userDataDir: null,
-            headless: true
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+
         const page = await browser.newPage();
 
         await page.setViewport({

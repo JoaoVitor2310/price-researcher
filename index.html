@@ -29,9 +29,9 @@
         <div class="loader"></div> <!-- Adicione uma animação de carregamento (a mesma usada anteriormente) -->
     </div>
     <h2>Legenda:</h2>
-    <p><strong>F: </strong> Jogo que não foi possível achar na plataforma, provavelmente por ter algum caracter
+    <p><strong>F: </strong> Jogo que não foi possível achar na plataforma, provavelmente por ter algum caractere
         diferenciado.</p>
-    <p><strong>N: </strong> Jogo que possui pico menor que 30 jogadores nas últimas 24h na steam.</p>
+    <p><strong>N: </strong> Jogo que possui pico de jogadores menor do que o pedido  nas últimas 24h na steam e custa mais de 2 euros.</p>
     <p><strong>O: </strong> Jogo que está fora de estoque.</p>
 
     <script>
@@ -91,7 +91,7 @@
 
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao enviar arquivo.');
+                alert('Erro interno do servidor.');
                 document.getElementById('loadingIndicator').style.display = 'none'; // Ocultar o indicador de carregamento em caso de erro
             } finally {
                 // Garantir que o botão seja habilitado novamente mesmo em caso de erro
