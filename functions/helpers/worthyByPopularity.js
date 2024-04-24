@@ -5,7 +5,7 @@ const worthyByPopularity = (price, minPopularity, popularity) => {
     if (popularity < minPopularity && price > 2.00) {
         return 'N';
     } else {
-        return price;
+        return price.toFixed(2);
     }
 }
 

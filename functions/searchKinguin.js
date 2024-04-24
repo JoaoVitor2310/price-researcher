@@ -24,7 +24,8 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
     try {
         browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
-            headless: false // Define se o navegador será exibido (false) ou não (true)
+            headless: false , 
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
 
