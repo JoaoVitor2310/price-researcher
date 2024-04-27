@@ -38,7 +38,7 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
 
         let elementoClicado = false, gameName;
 
-        await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`);
+        await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`, { waitUntil: 'domcontentloaded' });
 
         const games = await page.$$eval('h3[title]', h3s => h3s.map(h3 => h3.textContent)); // Separa o nome dos jogos
 
@@ -101,6 +101,8 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
         await page.waitForSelector('em.sc-o4ugwn-12');
         await page.$eval('em.sc-o4ugwn-12', emElement => emElement.click()); // Clica em EUR
         
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: timeOut });
+
         let values;
 
         await page.waitForSelector('div.offer-item-wrapper span[content]', { timeout: timeOut }).catch(() => { });

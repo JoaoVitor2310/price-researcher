@@ -95,6 +95,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
                 return "API Gamivo desligada";
             }
         } else {
+            // console.log(error);
             return "F";
         }
 

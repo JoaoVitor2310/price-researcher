@@ -82,7 +82,7 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
             return worthyByPopularity(precoG2A, minPopularity, popularity);
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             return "API G2A provavelmente desligada.";
         }
     } catch (error) {

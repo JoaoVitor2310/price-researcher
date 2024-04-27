@@ -82,7 +82,7 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                         const promise2 = searchG2A(game, minPopularity, popularity);
                         const promise3 = searchKinguin(game, minPopularity, popularity);
 
-                        // // Executar as três funções simultaneamente
+                        // Executar as três funções simultaneamente
                         [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
                   } else {
                         priceGamivo = 'N';
