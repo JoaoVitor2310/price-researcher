@@ -17,13 +17,15 @@ dotenv.config();
 const timeOut = process.env.timeOut;
 
 import clearString from './helpers/clearString.js';
+import clearRomamNumber from './helpers/clearRomamNumber.js';
+import clearDLC from './helpers/clearDLC.js';
 
 const searchSteamDb = async (gameString) => {
     let browser;
     try {
         browser = await puppeteer.launch({
             userDataDir: null,
-            headless: true,
+            headless: false,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
@@ -41,19 +43,27 @@ const searchSteamDb = async (gameString) => {
         // Seletor do elemento de entrada
         const inputElement = await page.waitForSelector('input[placeholder="search games"]', { visible: true });
 
+        
+        let gameStringClean = clearRomamNumber(gameString);
+        gameStringClean = clearDLC(gameStringClean);
+        
         // Digita o nome do jogo no elemento de entrada
-        await inputElement.type(gameString);
+        await inputElement.type(gameStringClean);
         await inputElement.press('Enter');
-
+        
         await page.waitForNavigation();
-
+        
         const links = await page.$$('a');
+        
+        gameString = clearString(gameString);
+        gameString = clearDLC(gameString);
+        console.log(gameString);
 
         for (const link of links) {
             let gameName = await page.evaluate(el => el.textContent, link);
             
             gameName = clearString(gameName);
-            gameString = clearString(gameString);
+            gameName = clearDLC(gameName);
             
             // console.log("gameName: " + gameName); // Debug
             // console.log("gameString: " + gameString);
