@@ -19,6 +19,7 @@ const timeOut = process.env.timeOut;
 const apiGamivoUrl = process.env.apiGamivoUrl;
 
 import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
 import worthyByPopularity from './helpers/worthyByPopularity.js';
 
 const searchGamivo = async (gameString, minPopularity, popularity) => {
@@ -37,7 +38,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
         });
 
 
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, ''); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
+        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
 
         // console.log("searchString: " + searchString);
         await page.goto(`https://www.gamivo.com/pt/search/${searchString}`);
@@ -47,21 +48,26 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('.product-tile__name');
 
+        gameString = clearString(gameString);
+        gameString = clearDLC(gameString);
+        
         // Itera sobre cada resultado
-
         for (const resultado of resultados) {
             // Obtém o texto do elemento "span" com a classe "ng-star-inserted" dentro do resultado
             let gameName = await resultado.$eval('span.ng-star-inserted', element => element.textContent);
-
+            
             gameName = clearString(gameName);
-            gameString = clearString(gameString);
-
+            gameName = clearDLC(gameName);
+            
             // Verifica se o texto do jogo contém a palavra "Steam"
             if (gameName.includes(gameString)) {
                 const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // Padrão: nome do jogo - região - "Global"
-                const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Padrão: Nome do jogo - "Global Steam"
+                // const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Padrão: Nome do jogo - "Global Steam"
+                const regex2 = new RegExp(`${gameString}\\sGlobal Steam$`, 'i');
+                const regex3 = new RegExp(`${gameString}\\sROW\\sSteam$`, 'i');
 
-                if (regex.test(gameName) || regex2.test(gameName)) {
+
+                if (regex.test(gameName) || regex2.test(gameName) || regex3.test(gameName)) {
                     // Clica no resultado
 
                     const elementoLink = await resultado.$('a');
@@ -82,17 +88,10 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
 
                 const precoGamivo = response.data.menorPreco;
 
-                // popularity = 31; // Debug
-                // if (popularity < 30 && precoGamivo > 2.00) {
-                //     lineToWrite = `N`;
-                // } else {
-                //     lineToWrite = precoGamivo;
-                // }
-
                 lineToWrite = worthyByPopularity(precoGamivo, minPopularity, popularity);
 
             } catch (error) {
-                return "API Gamivo desligada";
+                return "API Gamivo desligada ou arquivo env faltando";
             }
         } else {
             // console.log(error);

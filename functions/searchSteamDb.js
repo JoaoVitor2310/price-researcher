@@ -57,8 +57,7 @@ const searchSteamDb = async (gameString) => {
         
         gameString = clearString(gameString);
         gameString = clearDLC(gameString);
-        console.log(gameString);
-
+        
         for (const link of links) {
             let gameName = await page.evaluate(el => el.textContent, link);
             
@@ -67,7 +66,7 @@ const searchSteamDb = async (gameString) => {
             
             // console.log("gameName: " + gameName); // Debug
             // console.log("gameString: " + gameString);
-
+            
             if (gameName === gameString) {
                 await link.click();
                 break; // Finaliza o loop pois encontrou o elemento

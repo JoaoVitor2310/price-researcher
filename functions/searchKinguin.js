@@ -16,6 +16,7 @@ dotenv.config();
 const timeOut = process.env.timeOut;
 
 import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
 import worthyByPopularity from './helpers/worthyByPopularity.js';
 
 const searchKinguin = async (gameString, minPopularity, popularity) => {
@@ -34,21 +35,26 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
             height: 1080
         });
 
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, ''); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
-
+        let searchString = clearDLC(gameString);
+        
+        searchString = searchString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F", "™" -> "" e "'" -> "%27"
+        
         let elementoClicado = false, gameName;
 
         await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`);
-
+        
         const games = await page.$$eval('h3[title]', h3s => h3s.map(h3 => h3.textContent)); // Separa o nome dos jogos
-
+        
+        gameString = clearDLC(gameString);
+        gameString = clearString(gameString);
+        
         for (const game of games) { // For para entrar na página do jogo
             if (game.includes('Steam CD Key')) {
 
                 gameName = game.substring(0, game.indexOf('Steam CD Key')).trim(); // Extrai a parte da string até "Steam CD Key"
 
                 gameName = clearString(gameName);
-                gameString = clearString(gameString);
+                gameName = clearDLC(gameName);
 
                 if (gameName == gameString) {
                     await page.waitForSelector(`h3[title="${game}"]`, { timeout: timeOut });

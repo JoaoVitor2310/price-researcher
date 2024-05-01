@@ -1,6 +1,6 @@
 const clearString = (stringToSearch) => {
 
-    const romanRegex = /\b[IVXLCDM]+\b/g;
+    const romanRegex = /\b(?!dlc\b)[IVXLCDM]+\b/gi;
 
     // Substituir números romanos pelo equivalente decimal
     stringToSearch = stringToSearch.replace(romanRegex, (match) => {

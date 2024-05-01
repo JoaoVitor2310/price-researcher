@@ -18,6 +18,7 @@ const apiG2aUrl = process.env.apiG2aUrl;
 const timeOut = process.env.timeOut;
 
 import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
 import worthyByPopularity from './helpers/worthyByPopularity.js';
 
 const searchG2A = async (gameString, minPopularity, popularity, gameType = "Steam Key", region = "GLOBAL") => {
@@ -40,12 +41,10 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
         let gameUrl;
 
-        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, ''); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
-
+        let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
 
         // console.log("searchString: " + searchString);
         await page.goto(`https://www.g2a.com/pt/search?query=${searchString}`);
-
 
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('a');
@@ -56,10 +55,12 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
             gameName = clearString(gameName);
             gameString = clearString(gameString);
 
-            const gameStringPattern = new RegExp(`\\b${gameString}\\b`, 'i');
+            // const gameStringPattern = new RegExp(`\\b${gameString}\\b`, 'i');
+            const gameStringPattern = new RegExp(`^${gameString} \\(PC\\)`, 'i');
 
             // if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
             if (gameStringPattern.test(gameName) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
+                console.log(gameName);
                 gameUrl += await page.evaluate(element => element.getAttribute('href'), link);
                 break;
             }
@@ -83,7 +84,7 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
             return worthyByPopularity(precoG2A, minPopularity, popularity);
         } catch (error) {
             // console.log(error);
-            return "API G2A provavelmente desligada.";
+            return "API G2A desligada ou arquivo env faltando.";
         }
     } catch (error) {
         // console.log(error);
