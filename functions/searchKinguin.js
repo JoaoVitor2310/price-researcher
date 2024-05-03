@@ -157,11 +157,11 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
 
                 lineToWrite = worthyByPopularity(finalPrice, minPopularity, popularity);
                 
-                return lineToWrite;
+                return lineToWrite.replace('.', ',');
             } else {
                 finalPrice = menorPreco - 0.01;
                 lineToWrite = worthyByPopularity(finalPrice, minPopularity, popularity);
-                return lineToWrite;
+                return lineToWrite.replace('.', ',');
             }
         } else { // Um vendedor
             lineToWrite = worthyByPopularity(values, minPopularity, popularity);

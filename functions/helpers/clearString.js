@@ -14,6 +14,8 @@ const clearString = (stringToSearch) => {
     // Remove somente o  ™, : e ®. Precisa ser feito separado
     stringToSearch = stringToSearch.replace(/[™:®]/g, '');
 
+    // Remover "|" e qualquer espaço após ele
+    stringToSearch = stringToSearch.replace(/\|\s*/g, ''); // Substitui "|" e qualquer espaço subsequente
 
     return stringToSearch;
 }

@@ -19,6 +19,7 @@ const timeOut = process.env.timeOut;
 import clearString from './helpers/clearString.js';
 import clearRomamNumber from './helpers/clearRomamNumber.js';
 import clearDLC from './helpers/clearDLC.js';
+import clearEdition from './helpers/clearEdition.js';
 
 const searchSteamDb = async (gameString) => {
     let browser;
@@ -46,6 +47,8 @@ const searchSteamDb = async (gameString) => {
         
         let gameStringClean = clearRomamNumber(gameString);
         gameStringClean = clearDLC(gameStringClean);
+        gameStringClean = clearEdition(gameStringClean);
+        
         
         // Digita o nome do jogo no elemento de entrada
         await inputElement.type(gameStringClean);
@@ -57,12 +60,15 @@ const searchSteamDb = async (gameString) => {
         
         gameString = clearString(gameString);
         gameString = clearDLC(gameString);
+        gameString = clearEdition(gameString);
+        gameString = gameString.toLowerCase();
         
         for (const link of links) {
             let gameName = await page.evaluate(el => el.textContent, link);
             
             gameName = clearString(gameName);
             gameName = clearDLC(gameName);
+            gameName = clearEdition(gameName);
             
             // console.log("gameName: " + gameName); // Debug
             // console.log("gameString: " + gameString);

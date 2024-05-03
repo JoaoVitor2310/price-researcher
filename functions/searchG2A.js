@@ -81,7 +81,8 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
             precoG2A = response.data.menorPreco;
 
-            return worthyByPopularity(precoG2A, minPopularity, popularity);
+            lineToWrite = worthyByPopularity(precoG2A, minPopularity, popularity);
+            return lineToWrite.replace('.', ',');
         } catch (error) {
             // console.log(error);
             return "API G2A desligada ou arquivo env faltando.";
