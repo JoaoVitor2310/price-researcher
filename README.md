@@ -16,7 +16,8 @@ Xvfb :99 -screen 0 1920x1080x24 &
 export DISPLAY=:99
 node index.js
 
-
+### Comando para gerar o arquivo executável
+pkg index.js --target node16-win-x64 --public
 
 
 

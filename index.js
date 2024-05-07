@@ -1,13 +1,16 @@
-import express from 'express';
-import dotenv from 'dotenv';
-dotenv.config();
-import path from 'path';
-import multer from 'multer';
-import fs from 'fs';
-import searchSteamDb from "./functions/searchSteamDb.js";
-import searchGamivo from "./functions/searchGamivo.js";
-import searchG2A from "./functions/searchG2A.js";
-import searchKinguin from "./functions/searchKinguin.js";
+const express = require('express'); // Converter import para require
+const dotenv = require('dotenv'); // Converter import para require
+dotenv.config(); // Configuração do dotenv para carregar variáveis de ambiente
+
+const path = require('path'); // Converter import para require
+const multer = require('multer'); // Converter import para require
+const fs = require('fs'); // Converter import para require
+
+// Importações locais usando require
+const searchSteamDb = require('./functions/searchSteamDb'); 
+const searchGamivo = require('./functions/searchGamivo'); 
+const searchG2A = require('./functions/searchG2A'); 
+const searchKinguin = require('./functions/searchKinguin'); 
 
 // import path from "path";
 
@@ -77,11 +80,10 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
                         // priceKinguin = await searchKinguin(game, minPopularity, popularity);
 
+                        // Executar as três funções simultaneamente
                         const promise1 = searchGamivo(game, minPopularity, popularity);
                         const promise2 = searchG2A(game, minPopularity, popularity);
                         const promise3 = searchKinguin(game, minPopularity, popularity);
-
-                        // Executar as três funções simultaneamente
                         [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
                   } else {
                         priceGamivo = 'N';
@@ -99,6 +101,7 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\n`; // Debug só Gamivo
             // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t\t${popularity}\n`; // Debug só G2A
             // const fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t\t${popularity}\n`; // Debug só Kinguin
+            // const fullLine = `${priceG2A}\t${priceGamivo}\tF\t\t\t\t${popularity}\n`; // Debug SEM Kinguin
             console.log(fullLine);
 
             // Termina o for de cada jogo, deve finalizar de montar o arquivo txt que será enviado
@@ -134,5 +137,5 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
-      console.log(`Listening to port ${port}.`);
+      console.log(`Price-researcher rodando em: http://localhost:${port}.`);
 })

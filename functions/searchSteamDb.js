@@ -1,32 +1,28 @@
-import puppeteer from 'puppeteer-extra';
-import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
-
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+const puppeteer = require('puppeteer-extra'); // Importar puppeteer-extra
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker'); // Plugin de bloqueio de anúncios
 
 puppeteer.use(
     AdblockerPlugin({
-        // Optionally enable Cooperative Mode for several request interceptors
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+        interceptResolutionPriority: require('puppeteer').DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
     })
-)
+);
 
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
+const dotenv = require('dotenv');
+dotenv.config(); // Carregar variáveis de ambiente
 
-const timeOut = process.env.timeOut;
+const timeOut = process.env.timeOut; // Variável de ambiente para tempo limite
 
-import clearString from './helpers/clearString.js';
-import clearRomamNumber from './helpers/clearRomamNumber.js';
-import clearDLC from './helpers/clearDLC.js';
-import clearEdition from './helpers/clearEdition.js';
+const clearString = require('./helpers/clearString'); // Assumindo que estes são módulos JS no mesmo diretório
+const clearRomamNumber = require('./helpers/clearRomamNumber');
+const clearDLC = require('./helpers/clearDLC');
+const clearEdition = require('./helpers/clearEdition');
 
 const searchSteamDb = async (gameString) => {
     let browser;
     try {
         browser = await puppeteer.launch({
             userDataDir: null,
-            headless: false,
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
@@ -89,7 +85,7 @@ const searchSteamDb = async (gameString) => {
 
         return popularity;
     } catch (error) {
-        // console.log(error);
+        console.log(error);
         return "F";
     } finally {
         await browser.close();
@@ -97,4 +93,4 @@ const searchSteamDb = async (gameString) => {
     }
 };
 
-export default searchSteamDb;
+module.exports = searchSteamDb;

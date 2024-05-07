@@ -11,4 +11,4 @@ const clearDLC = (stringToSearch) => {
     return normalizedString;
 };
 
-export default clearDLC;
+module.exports = clearDLC;

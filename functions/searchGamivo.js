@@ -1,26 +1,27 @@
-import puppeteer from 'puppeteer-extra';
-import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
+const puppeteer = require('puppeteer-extra');
+const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer');
 
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 
 puppeteer.use(
     AdblockerPlugin({
-        // Optionally enable Cooperative Mode for several request interceptors
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
     })
-)
+);
 
+const axios = require('axios'); // Usar require para axios
+const dotenv = require('dotenv'); // Usar require para dotenv
 
+dotenv.config(); // Carregar variáveis de ambiente
 
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
-const timeOut = process.env.timeOut;
-const apiGamivoUrl = process.env.apiGamivoUrl;
+const timeOut = process.env.timeOut; // Capturar variável de ambiente
+const apiGamivoUrl = process.env.apiGamivoUrl; // Capturar outra variável de ambiente
 
-import clearString from './helpers/clearString.js';
-import clearDLC from './helpers/clearDLC.js';
-import worthyByPopularity from './helpers/worthyByPopularity.js';
+// Importações locais usando require
+const clearString = require('./helpers/clearString'); 
+const clearDLC = require('./helpers/clearDLC');
+const worthyByPopularity = require('./helpers/worthyByPopularity');
 
 const searchGamivo = async (gameString, minPopularity, popularity) => {
     let precoGamivo, lineToWrite, productString, browser;
@@ -110,4 +111,4 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
     }
 };
 
-export default searchGamivo;
+module.exports = searchGamivo;

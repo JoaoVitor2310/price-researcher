@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
@@ -13,14 +13,26 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.8",
+    "axios": "^0.27.2",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
+    "nexe": "^4.0.0-rc.6",
     "nodemailer": "^6.9.9",
     "puppeteer": "^22.6.2",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-adblocker": "^2.13.6",
     "slugify": "^1.6.6"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/puppeteer/**/*",
+      "node_modules/vm2/**/*"
+    ],
+    "targets": [
+        "node18-macos-arm64",
+        "node18-win-arm64"
+    ]
   }
+    
 }

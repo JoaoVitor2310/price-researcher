@@ -1,23 +1,25 @@
-import puppeteer from 'puppeteer-extra';
-import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
+const puppeteer = require('puppeteer-extra');
+const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = require('puppeteer').DEFAULT_INTERCEPT_RESOLUTION_PRIORITY;
 
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 
 puppeteer.use(
     AdblockerPlugin({
-        // Optionally enable Cooperative Mode for several request interceptors
+        // Opcionalmente, habilita prioridade de resolução cooperativa para vários interceptores de requisição
         interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
     })
-)
+);
 
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
-const timeOut = process.env.timeOut;
+const axios = require('axios'); // Importação de axios
+const dotenv = require('dotenv'); // Importação de dotenv
 
-import clearString from './helpers/clearString.js';
-import clearDLC from './helpers/clearDLC.js';
-import worthyByPopularity from './helpers/worthyByPopularity.js';
+dotenv.config(); // Carregar variáveis de ambiente
+
+const timeOut = process.env.timeOut; // Obter tempo limite das variáveis de ambiente
+
+const clearString = require('./helpers/clearString'); // Ajustar caminho para CommonJS
+const clearDLC = require('./helpers/clearDLC'); // Ajustar caminho para CommonJS
+const worthyByPopularity = require('./helpers/worthyByPopularity'); // Ajustar caminho para CommonJS
 
 const searchKinguin = async (gameString, minPopularity, popularity) => {
     let browser;
@@ -194,5 +196,4 @@ const rejectCookies = async (page) => {
 }
 
 
-
-export default searchKinguin;
+module.exports = searchKinguin;

@@ -1,25 +1,28 @@
-import puppeteer from 'puppeteer-extra';
-import DEFAULT_INTERCEPT_RESOLUTION_PRIORITY from 'puppeteer';
+const puppeteer = require('puppeteer-extra');
+const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer');
 
-import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 
 puppeteer.use(
     AdblockerPlugin({
-        // Optionally enable Cooperative Mode for several request interceptors
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
     })
-)
+);
 
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
+const axios = require('axios'); // Converter importação para require
+const dotenv = require('dotenv'); // Converter importação para require
 
+dotenv.config(); // Carregar variáveis de ambiente
+
+// Capturar variáveis de ambiente após o dotenv.config
 const apiG2aUrl = process.env.apiG2aUrl;
 const timeOut = process.env.timeOut;
 
-import clearString from './helpers/clearString.js';
-import clearDLC from './helpers/clearDLC.js';
-import worthyByPopularity from './helpers/worthyByPopularity.js';
+// Converter importações locais para require
+const clearString = require('./helpers/clearString'); 
+const clearDLC = require('./helpers/clearDLC');
+const worthyByPopularity = require('./helpers/worthyByPopularity');
 
 const searchG2A = async (gameString, minPopularity, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite, browser;
@@ -60,7 +63,6 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
             // if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
             if (gameStringPattern.test(gameName) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
-                console.log(gameName);
                 gameUrl += await page.evaluate(element => element.getAttribute('href'), link);
                 break;
             }
@@ -96,4 +98,4 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
     }
 };
 
-export default searchG2A;
+module.exports = searchG2A;
