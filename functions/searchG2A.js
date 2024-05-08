@@ -23,6 +23,7 @@ const timeOut = process.env.timeOut;
 const clearString = require('./helpers/clearString'); 
 const clearDLC = require('./helpers/clearDLC');
 const worthyByPopularity = require('./helpers/worthyByPopularity');
+const clearEdition = require('./helpers/clearEdition');
 
 const searchG2A = async (gameString, minPopularity, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite, browser;
@@ -43,6 +44,7 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
 
         let gameUrl;
+        gameString = clearEdition(gameString);
 
         let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
 
@@ -52,11 +54,12 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('a');
 
+        gameString = clearString(gameString);
+        
         for (const link of resultados) {
             let gameName = await page.evaluate(element => element.textContent, link);
-
+            
             gameName = clearString(gameName);
-            gameString = clearString(gameString);
 
             // const gameStringPattern = new RegExp(`\\b${gameString}\\b`, 'i');
             const gameStringPattern = new RegExp(`^${gameString} \\(PC\\)`, 'i');

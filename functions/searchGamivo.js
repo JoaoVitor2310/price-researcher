@@ -22,6 +22,7 @@ const apiGamivoUrl = process.env.apiGamivoUrl; // Capturar outra variável de am
 const clearString = require('./helpers/clearString'); 
 const clearDLC = require('./helpers/clearDLC');
 const worthyByPopularity = require('./helpers/worthyByPopularity');
+const clearEdition = require('./helpers/clearEdition');
 
 const searchGamivo = async (gameString, minPopularity, popularity) => {
     let precoGamivo, lineToWrite, productString, browser;
@@ -38,6 +39,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
             height: 1080
         });
 
+        gameString = clearEdition(gameString);
 
         let searchString = gameString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F" e "™" -> ""
 
