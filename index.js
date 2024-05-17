@@ -7,12 +7,12 @@ const multer = require('multer'); // Converter import para require
 const fs = require('fs'); // Converter import para require
 
 // Importações locais usando require
-const searchSteamDb = require('./functions/searchSteamDb'); 
-const searchGamivo = require('./functions/searchGamivo'); 
-const searchG2A = require('./functions/searchG2A'); 
-const searchKinguin = require('./functions/searchKinguin'); 
+const searchSteamDb = require('./functions/searchSteamDb');
+const searchGamivo = require('./functions/searchGamivo');
+const searchG2A = require('./functions/searchG2A');
+const searchKinguin = require('./functions/searchKinguin');
 
-// import path from "path";
+let isBestBuy86 = process.env.isBestBuy86;
 
 const app = express();
 
@@ -61,30 +61,35 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
       // O for vai começar aqui passando em todos os gamesToSearch
       for (let game of gamesToSearch) {
+            let search = true;
             console.log("Game: " + game);
             let popularity = await searchSteamDb(game);
             let priceGamivo, priceG2A, priceKinguin;
             // let popularity = 2,442; // Debug
 
             if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade
+                  isBestBuy86 = !!isBestBuy86;
+                  if (isBestBuy86 && (popularity < minPopularity)) search = false;
+
                   if (popularity.includes(',')) { popularity = popularity.replace(',', '.'); }
 
                   let popularityNumber = parseFloat(popularity);
                   let decimalPlaces = (popularity.split('.')[1] || '').length;
                   popularity = popularityNumber.toFixed(decimalPlaces);
 
-                  if (popularity > 0) {
-                        // priceGamivo = await searchGamivo(game, minPopularity, popularity);
+
+                  if (popularity > 0 && search) {
+                        priceGamivo = await searchGamivo(game, minPopularity, popularity);
 
                         // priceG2A = await searchG2A(game, minPopularity, popularity);
 
                         // priceKinguin = await searchKinguin(game, minPopularity, popularity);
 
                         // Executar as três funções simultaneamente
-                        const promise1 = searchGamivo(game, minPopularity, popularity);
-                        const promise2 = searchG2A(game, minPopularity, popularity);
-                        const promise3 = searchKinguin(game, minPopularity, popularity);
-                        [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
+                        // const promise1 = searchGamivo(game, minPopularity, popularity);
+                        // const promise2 = searchG2A(game, minPopularity, popularity);
+                        // const promise3 = searchKinguin(game, minPopularity, popularity);
+                        // [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
                   } else {
                         priceGamivo = 'N';
                         priceG2A = 'N';
@@ -97,8 +102,8 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             }
             // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
 
-            const fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t\t${popularity}\n`; // Escreve a linha para o txt
-            // const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\n`; // Debug só Gamivo
+            // const fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t\t${popularity}\n`; // Escreve a linha para o txt
+            const fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\n`; // Debug só Gamivo
             // const fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t\t${popularity}\n`; // Debug só G2A
             // const fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t\t${popularity}\n`; // Debug só Kinguin
             // const fullLine = `${priceG2A}\t${priceGamivo}\tF\t\t\t\t${popularity}\n`; // Debug SEM Kinguin

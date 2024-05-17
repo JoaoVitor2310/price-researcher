@@ -21,7 +21,6 @@ const searchSteamDb = async (gameString) => {
     let browser;
     try {
         browser = await puppeteer.launch({
-            userDataDir: null,
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
@@ -40,35 +39,35 @@ const searchSteamDb = async (gameString) => {
         // Seletor do elemento de entrada
         const inputElement = await page.waitForSelector('input[placeholder="search games"]', { visible: true });
 
-        
+
         let gameStringClean = clearRomamNumber(gameString);
         gameStringClean = clearDLC(gameStringClean);
         gameStringClean = clearEdition(gameStringClean);
-        
-        
+
+
         // Digita o nome do jogo no elemento de entrada
         await inputElement.type(gameStringClean);
         await inputElement.press('Enter');
-        
+
         await page.waitForNavigation();
-        
+
         const links = await page.$$('a');
-        
+
         gameString = clearString(gameString);
         gameString = clearDLC(gameString);
         gameString = clearEdition(gameString);
         gameString = gameString.toLowerCase();
-        
+
         for (const link of links) {
             let gameName = await page.evaluate(el => el.textContent, link);
-            
+
             gameName = clearString(gameName);
             gameName = clearDLC(gameName);
             gameName = clearEdition(gameName);
-            
+
             // console.log("gameName: " + gameName); // Debug
             // console.log("gameString: " + gameString);
-            
+
             if (gameName === gameString) {
                 await link.click();
                 break; // Finaliza o loop pois encontrou o elemento
@@ -85,10 +84,19 @@ const searchSteamDb = async (gameString) => {
 
         return popularity;
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         return "F";
     } finally {
+        const pages = await browser.pages();
+        for (let i = 0; i < pages.length; i++) {
+            await pages[i].close();
+        }
+        const childProcess = browser.process()
+        if (childProcess) {
+            childProcess.kill(9)
+        }
         await browser.close();
+        if (browser && browser.process() != null) browser.process().kill('SIGINT');
 
     }
 };

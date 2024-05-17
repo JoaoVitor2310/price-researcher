@@ -175,7 +175,16 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
         // console.log('Ou o timeout tá mt rápido e não dá tempo de carregar a página');
         return 'F';
     } finally {
+        const pages = await browser.pages();
+        for (let i = 0; i < pages.length; i++) {
+            await pages[i].close();
+        }
+        const childProcess = browser.process()
+        if (childProcess) {
+            childProcess.kill(9)
+        }
         await browser.close();
+        if (browser && browser.process() != null) browser.process().kill('SIGINT');
     }
 
 }
