@@ -31,6 +31,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
             headless: false,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+
         const page = await browser.newPage();
 
         await page.setViewport({
@@ -99,7 +100,6 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
                 return "API Gamivo desligada ou arquivo env faltando";
             }
         } else {
-            console.log(error);
             return "F";
         }
 
@@ -112,12 +112,10 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
         return 'F';
     } finally {
         const pages = await browser.pages();
-        for (let i = 0; i < pages.length; i++) {
-            await pages[i].close();
-        }
+        await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
-            childProcess.kill(9)
+            childProcess.kill()
         }
         await browser.close();
         if (browser && browser.process() != null) browser.process().kill('SIGINT');

@@ -27,6 +27,10 @@ const searchSteamDb = async (gameString) => {
 
         const page = await browser.newPage();
 
+        // const context = await browser.createBrowserContext();
+
+        // const page = await context.newPage();
+
         await page.setViewport({
             width: 1920,
             height: 1080
@@ -88,9 +92,11 @@ const searchSteamDb = async (gameString) => {
         return "F";
     } finally {
         const pages = await browser.pages();
-        for (let i = 0; i < pages.length; i++) {
-            await pages[i].close();
-        }
+        // console.log(pages);
+        // for (let i = 0; i < pages.length; i++) {
+        //     await pages[i].close();
+        // }
+        await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
             childProcess.kill(9)

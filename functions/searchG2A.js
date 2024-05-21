@@ -98,12 +98,10 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
         return 'F';
     } finally {
         const pages = await browser.pages();
-        for (let i = 0; i < pages.length; i++) {
-            await pages[i].close();
-        }
+        await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
-            childProcess.kill(9)
+            childProcess.kill()
         }
         await browser.close();
         if (browser && browser.process() != null) browser.process().kill('SIGINT');
