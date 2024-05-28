@@ -48,4 +48,4 @@ function RomantoInt(romanStr) {
 
 
 
-module.exports = clearString;
+export default clearString;

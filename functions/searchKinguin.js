@@ -1,7 +1,17 @@
-const puppeteer = require('puppeteer-extra');
-const DEFAULT_INTERCEPT_RESOLUTION_PRIORITY = require('puppeteer').DEFAULT_INTERCEPT_RESOLUTION_PRIORITY;
+import puppeteer from 'puppeteer-extra';
+import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 
-const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
+import dotenv from 'dotenv';
+
+dotenv.config(); // Carregar variáveis de ambiente
+
+const timeOut = process.env.timeOut; // Obter tempo limite das variáveis de ambiente
+
+// Importações locais usando import
+import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
 
 puppeteer.use(
     AdblockerPlugin({
@@ -10,24 +20,13 @@ puppeteer.use(
     })
 );
 
-const axios = require('axios'); // Importação de axios
-const dotenv = require('dotenv'); // Importação de dotenv
-
-dotenv.config(); // Carregar variáveis de ambiente
-
-const timeOut = process.env.timeOut; // Obter tempo limite das variáveis de ambiente
-
-const clearString = require('./helpers/clearString'); // Ajustar caminho para CommonJS
-const clearDLC = require('./helpers/clearDLC'); // Ajustar caminho para CommonJS
-const worthyByPopularity = require('./helpers/worthyByPopularity'); // Ajustar caminho para CommonJS
-
 const searchKinguin = async (gameString, minPopularity, popularity) => {
     let browser;
 
     try {
         browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
-            headless: false , 
+            headless: false,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
@@ -38,18 +37,18 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
         });
 
         let searchString = clearDLC(gameString);
-        
+
         searchString = searchString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F", "™" -> "" e "'" -> "%27"
-        
+
         let elementoClicado = false, gameName;
 
         await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&size=50&sort=bestseller.total,DESC`);
-        
+
         const games = await page.$$eval('h3[title]', h3s => h3s.map(h3 => h3.textContent)); // Separa o nome dos jogos
-        
+
         gameString = clearDLC(gameString);
         gameString = clearString(gameString);
-        
+
         for (const game of games) { // For para entrar na página do jogo
             if (game.includes('Steam CD Key')) {
 
@@ -108,7 +107,7 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
 
         await page.waitForSelector('em.sc-o4ugwn-12');
         await page.$eval('em.sc-o4ugwn-12', emElement => emElement.click()); // Clica em EUR
-        
+
         // await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: timeOut });
 
         let values;
@@ -123,7 +122,7 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
         } else { // Só tem um vendedor, o preço vai aparecer só lá em cima na página
             console.log('Só tem um vendedor');
             await page.waitForSelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price', { timeout: timeOut });
-            
+
             const textoSegundoSpan = await page.evaluate(() => {
                 const secondSpan = document.querySelector('span.sc-1kj1cv9-5.iDdryn.main-offer__price > span:nth-child(2)');
                 if (secondSpan) {
@@ -132,7 +131,7 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
                     return null;
                 }
             });
-            
+
             values = textoSegundoSpan.replace('€', '').replace('.', ','); // Remove o símbolo de euro
         }
 
@@ -158,7 +157,7 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
                 }
 
                 lineToWrite = worthyByPopularity(finalPrice, minPopularity, popularity);
-                
+
                 return lineToWrite.replace('.', ',');
             } else {
                 finalPrice = menorPreco - 0.01;
@@ -176,12 +175,10 @@ const searchKinguin = async (gameString, minPopularity, popularity) => {
         return 'F';
     } finally {
         const pages = await browser.pages();
-        for (let i = 0; i < pages.length; i++) {
-            await pages[i].close();
-        }
+        if (pages) await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
-            childProcess.kill(9)
+            childProcess.kill()
         }
         await browser.close();
         if (browser && browser.process() != null) browser.process().kill('SIGINT');
@@ -205,4 +202,4 @@ const rejectCookies = async (page) => {
 }
 
 
-module.exports = searchKinguin;
+export default searchKinguin;

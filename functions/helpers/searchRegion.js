@@ -1,4 +1,4 @@
-const searchRegion = (stringToSearch) => {
+const searchRegion = (stringToSearch) => { // Pesquisar por região
 
     
 
@@ -11,4 +11,4 @@ const searchRegion = (stringToSearch) => {
     return normalizedString;
 };
 
-module.exports = searchRegion;
+export default searchRegion;

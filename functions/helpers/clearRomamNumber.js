@@ -10,4 +10,4 @@ const clearRomamNumber = (stringToSearch) => {
     return normalizedString;
 }
 
-module.exports = clearRomamNumber;
+export default clearRomamNumber;

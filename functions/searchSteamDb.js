@@ -1,21 +1,24 @@
-const puppeteer = require('puppeteer-extra'); // Importar puppeteer-extra
-const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker'); // Plugin de bloqueio de anúncios
+import puppeteer from 'puppeteer-extra'; // Importar puppeteer-extra
+import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer'; // Importar DEFAULT_INTERCEPT_RESOLUTION_PRIORITY
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker'; // Plugin de bloqueio de anúncios
 
-puppeteer.use(
-    AdblockerPlugin({
-        interceptResolutionPriority: require('puppeteer').DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
-    })
-);
-
-const dotenv = require('dotenv');
+import dotenv from 'dotenv'; // Usar require para dotenv
 dotenv.config(); // Carregar variáveis de ambiente
 
 const timeOut = process.env.timeOut; // Variável de ambiente para tempo limite
 
-const clearString = require('./helpers/clearString'); // Assumindo que estes são módulos JS no mesmo diretório
-const clearRomamNumber = require('./helpers/clearRomamNumber');
-const clearDLC = require('./helpers/clearDLC');
-const clearEdition = require('./helpers/clearEdition');
+// Importações locais usando import
+import clearString from './helpers/clearString.js'; // Assumindo que estes são módulos JS no mesmo diretório
+import clearRomamNumber from './helpers/clearRomamNumber.js';
+import clearDLC from './helpers/clearDLC.js';
+import clearEdition from './helpers/clearEdition.js';
+
+puppeteer.use(
+    AdblockerPlugin({
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
+    })
+);
+
 
 const searchSteamDb = async (gameString) => {
     let browser;
@@ -92,14 +95,10 @@ const searchSteamDb = async (gameString) => {
         return "F";
     } finally {
         const pages = await browser.pages();
-        // console.log(pages);
-        // for (let i = 0; i < pages.length; i++) {
-        //     await pages[i].close();
-        // }
-        await Promise.all(pages.map((page) => page.close()));
+        if (pages) await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
-            childProcess.kill(9)
+            childProcess.kill()
         }
         await browser.close();
         if (browser && browser.process() != null) browser.process().kill('SIGINT');
@@ -107,4 +106,4 @@ const searchSteamDb = async (gameString) => {
     }
 };
 
-module.exports = searchSteamDb;
+export default searchSteamDb;

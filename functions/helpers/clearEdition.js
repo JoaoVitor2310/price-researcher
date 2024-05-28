@@ -15,4 +15,4 @@ const clearEdition = (stringToSearch) => {
     return normalizedString;
 };
 
-module.exports = clearEdition;
+export default clearEdition;

@@ -1,17 +1,18 @@
-const express = require('express'); // Converter import para require
-const dotenv = require('dotenv'); // Converter import para require
+import express from 'express'; // Converter require para import
+import dotenv from 'dotenv'; // Converter require para import
 dotenv.config(); // Configuração do dotenv para carregar variáveis de ambiente
 
-const path = require('path'); // Converter import para require
-const multer = require('multer'); // Converter import para require
-const fs = require('fs'); // Converter import para require
+import path from 'path'; // Converter require para import
+import multer from 'multer'; // Converter require para import
+import fs from 'fs'; // Converter require para import
 
-// Importações locais usando require
-const searchSteamDb = require('./functions/searchSteamDb');
-const searchGamivo = require('./functions/searchGamivo');
-const searchG2A = require('./functions/searchG2A');
-const searchKinguin = require('./functions/searchKinguin');
-const { isNumber } = require('puppeteer');
+// Importações locais usando import
+import searchSteamDb from './functions/searchSteamDb.js';
+import searchGamivo from './functions/searchGamivo.js';
+import searchG2A from './functions/searchG2A.js';
+import searchKinguin from './functions/searchKinguin.js';
+import { isNumber } from 'puppeteer';
+
 
 let isBestBuy86 = process.env.isBestBuy86;
 
@@ -98,10 +99,10 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                               // Executar as três funções simultaneamente
                               const promise1 = searchGamivo(game, minPopularity, popularity);
                               const promise2 = searchG2A(game, minPopularity, popularity);
-                              // const promise3 = searchKinguin(game, minPopularity, popularity);
-                              // [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
+                              const promise3 = searchKinguin(game, minPopularity, popularity);
+                              [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
 
-                              [priceGamivo, priceG2A] = await Promise.all([promise1, promise2]); // Sem KINGUIN
+                              // [priceGamivo, priceG2A] = await Promise.all([promise1, promise2]); // Sem KINGUIN
                         }
 
                   } else {
@@ -116,11 +117,11 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
             }
             // Escreve a linha daquele jogo(g2a gamivo kinguin 3 tabs popularidade nessa ordem)
             if (isBestBuy86 == 'true') {
-                  // fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t\t${popularity}\n`; // Escreve a linha para o txt
+                  fullLine = `${priceG2A}\t${priceGamivo}\t${priceKinguin}\t\t\t\t${popularity}\n`; // Escreve a linha para o txt
                   // fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\n`; // Debug só Gamivo
                   // fullLine = `${priceG2A}\tGamivo\tKinguin\t\t\t\t${popularity}\n`; // Debug só G2A
                   // fullLine = `G2A\tGamivo\t${priceKinguin}\t\t\t\t${popularity}\n`; // Debug só Kinguin
-                  fullLine = `${priceG2A}\t${priceGamivo}\tF\t\t\t\t${popularity}\n`; // Debug SEM Kinguin
+                  // fullLine = `${priceG2A}\t${priceGamivo}\tF\t\t\t\t${popularity}\n`; // Debug SEM Kinguin
             }
 
             console.log(fullLine);

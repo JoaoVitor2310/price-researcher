@@ -11,4 +11,4 @@ const worthyByPopularity = (price, minPopularity, popularity) => {
     }
 }
 
-module.exports = worthyByPopularity;
+export default worthyByPopularity;

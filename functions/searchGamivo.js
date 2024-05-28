@@ -1,7 +1,21 @@
-const puppeteer = require('puppeteer-extra');
-const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer');
+import puppeteer from 'puppeteer-extra';
+import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
 
-const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
+import axios from 'axios'; 
+import dotenv from 'dotenv';
+
+dotenv.config(); // Carregar variáveis de ambiente
+
+// Capturar variáveis de ambiente após o dotenv.config
+const apiGamivoUrl = process.env.apiGamivoUrl;
+const timeOut = process.env.timeOut;
+
+// Importações locais usando import
+import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
+import clearEdition from './helpers/clearEdition.js';
 
 puppeteer.use(
     AdblockerPlugin({
@@ -9,20 +23,6 @@ puppeteer.use(
         interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
     })
 );
-
-const axios = require('axios'); // Usar require para axios
-const dotenv = require('dotenv'); // Usar require para dotenv
-
-dotenv.config(); // Carregar variáveis de ambiente
-
-const timeOut = process.env.timeOut; // Capturar variável de ambiente
-const apiGamivoUrl = process.env.apiGamivoUrl; // Capturar outra variável de ambiente
-
-// Importações locais usando require
-const clearString = require('./helpers/clearString');
-const clearDLC = require('./helpers/clearDLC');
-const worthyByPopularity = require('./helpers/worthyByPopularity');
-const clearEdition = require('./helpers/clearEdition');
 
 const searchGamivo = async (gameString, minPopularity, popularity) => {
     let precoGamivo, lineToWrite, productString, browser;
@@ -112,7 +112,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
         return 'F';
     } finally {
         const pages = await browser.pages();
-        await Promise.all(pages.map((page) => page.close()));
+        if (pages) await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
             childProcess.kill()
@@ -122,4 +122,4 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
     }
 };
 
-module.exports = searchGamivo;
+export default searchGamivo;

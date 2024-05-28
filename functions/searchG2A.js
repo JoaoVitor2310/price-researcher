@@ -1,17 +1,9 @@
-const puppeteer = require('puppeteer-extra');
-const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer');
 
-const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
-
-puppeteer.use(
-    AdblockerPlugin({
-        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
-    })
-);
-
-const axios = require('axios'); // Converter importação para require
-const dotenv = require('dotenv'); // Converter importação para require
+import puppeteer from 'puppeteer-extra';
+import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+import axios from 'axios';
+import dotenv from 'dotenv';
 
 dotenv.config(); // Carregar variáveis de ambiente
 
@@ -20,10 +12,18 @@ const apiG2aUrl = process.env.apiG2aUrl;
 const timeOut = process.env.timeOut;
 
 // Converter importações locais para require
-const clearString = require('./helpers/clearString'); 
-const clearDLC = require('./helpers/clearDLC');
-const worthyByPopularity = require('./helpers/worthyByPopularity');
-const clearEdition = require('./helpers/clearEdition');
+import clearString from './helpers/clearString.js';
+import clearDLC from './helpers/clearDLC.js';
+import worthyByPopularity from './helpers/worthyByPopularity.js';
+import clearEdition from './helpers/clearEdition.js';
+
+puppeteer.use(
+    AdblockerPlugin({
+        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
+        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
+    })
+);
+
 
 const searchG2A = async (gameString, minPopularity, popularity, gameType = "Steam Key", region = "GLOBAL") => {
     let precoG2A, lineToWrite, browser;
@@ -98,7 +98,7 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
         return 'F';
     } finally {
         const pages = await browser.pages();
-        await Promise.all(pages.map((page) => page.close()));
+        if (pages) await Promise.all(pages.map((page) => page.close()));
         const childProcess = browser.process()
         if (childProcess) {
             childProcess.kill()
@@ -108,4 +108,4 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
     }
 };
 
-module.exports = searchG2A;
+export default searchG2A;
