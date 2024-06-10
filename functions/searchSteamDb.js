@@ -35,8 +35,8 @@ const searchSteamDb = async (gameString) => {
         // const page = await context.newPage();
 
         await page.setViewport({
-            width: 1920,
-            height: 1080
+            width: 426,
+            height: 240
         });
 
         await page.goto(`https://steamcharts.com/`);
@@ -50,6 +50,9 @@ const searchSteamDb = async (gameString) => {
         let gameStringClean = clearRomamNumber(gameString);
         gameStringClean = clearDLC(gameStringClean);
         gameStringClean = clearEdition(gameStringClean);
+        // gameStringClean = gameStringClean.trim();
+
+        // console.log("gameStringClean: " + gameStringClean);
 
 
         // Digita o nome do jogo no elemento de entrada
@@ -60,22 +63,29 @@ const searchSteamDb = async (gameString) => {
 
         const links = await page.$$('a');
 
-        gameString = clearString(gameString);
         gameString = clearDLC(gameString);
         gameString = clearEdition(gameString);
+        gameString = clearString(gameString);
         gameString = gameString.toLowerCase();
+        gameString = gameString.trim();
 
+        // console.log("gameString: " + gameString)
+        
         for (const link of links) {
             let gameName = await page.evaluate(el => el.textContent, link);
-
+            
             gameName = clearString(gameName);
             gameName = clearDLC(gameName);
             gameName = clearEdition(gameName);
+            gameName = gameName.trim();
+            // console.log("gameName: " + gameName);
 
+            // assassin's creed chronicles russia
+            // assassin’s creed chronicles russia
             // console.log("gameName: " + gameName); // Debug
             // console.log("gameString: " + gameString);
 
-            if (gameName === gameString) {
+            if (gameName == gameString) {
                 await link.click();
                 break; // Finaliza o loop pois encontrou o elemento
             }

@@ -1,8 +1,9 @@
 import puppeteer from 'puppeteer-extra';
 import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer';
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-import axios from 'axios'; 
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config(); // Carregar variáveis de ambiente
@@ -18,25 +19,22 @@ import worthyByPopularity from './helpers/worthyByPopularity.js';
 import clearEdition from './helpers/clearEdition.js';
 
 puppeteer.use(
-    AdblockerPlugin({
-        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
-    })
+    StealthPlugin()
 );
 
 const searchGamivo = async (gameString, minPopularity, popularity) => {
     let precoGamivo, lineToWrite, productString, browser;
     try {
         browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
         const page = await browser.newPage();
 
         await page.setViewport({
-            width: 1920,
-            height: 1080
+            width: 426,
+            height: 240
         });
 
         gameString = clearEdition(gameString);
@@ -91,7 +89,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
             try {
                 const response = await axios.get(`${apiGamivoUrl}/api/products/priceResearcher/${productString}`); // Colocar um try aqui p saber qnd o erro for aqui
 
-                const precoGamivo = response.data.menorPreco;
+                const precoGamivo = response.data.menorPreco - 0.01;
 
                 lineToWrite = worthyByPopularity(precoGamivo, minPopularity, popularity);
 
@@ -107,7 +105,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
         return lineToWrite.replace('.', ',');
 
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         // console.log('Ou o timeout tá mt rápido e não dá tempo de carregar a página');
         return 'F';
     } finally {

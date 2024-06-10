@@ -2,6 +2,7 @@
 import puppeteer from 'puppeteer-extra';
 import { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } from 'puppeteer';
 import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
@@ -18,10 +19,7 @@ import worthyByPopularity from './helpers/worthyByPopularity.js';
 import clearEdition from './helpers/clearEdition.js';
 
 puppeteer.use(
-    AdblockerPlugin({
-        // Opcionalmente, habilitar modo cooperativo para vários interceptores de requisição
-        interceptResolutionPriority: DEFAULT_INTERCEPT_RESOLUTION_PRIORITY,
-    })
+    StealthPlugin()
 );
 
 
@@ -32,14 +30,14 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
         browser = await puppeteer.launch({
             userDataDir: null, // Define o diretório de dados do usuário como null para abrir uma janela anônima
-            headless: false, 
-            args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
 
         await page.setViewport({
-            width: 1920,
-            height: 1080
+            width: 426 ,
+            height: 240
         });
 
 
@@ -53,16 +51,19 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
 
         // Obtém todos os resultados da pesquisa do nome do jogo
         const resultados = await page.$$('a');
-
+        
         gameString = clearString(gameString);
+        
+        // console.log(gameString); //
         
         for (const link of resultados) {
             let gameName = await page.evaluate(element => element.textContent, link);
             
-            gameName = clearString(gameName);
+            gameName = clearString(gameName); 
+            // console.log(gameName); // 
 
-            // const gameStringPattern = new RegExp(`\\b${gameString}\\b`, 'i');
-            const gameStringPattern = new RegExp(`^${gameString} \\(PC\\)`, 'i');
+            // const gameStringPattern = new RegExp(`^${gameString} \\(PC\\)`, 'i');
+            const gameStringPattern = new RegExp(`^${gameString}( \\(PC\\)| Steam Key)`, 'i');
 
             // if (gameName.includes(gameString) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
             if (gameStringPattern.test(gameName) && gameName.includes(gameType.toLowerCase()) && gameName.includes(region.toLowerCase())) {
@@ -90,7 +91,7 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
             return lineToWrite.replace('.', ',');
         } catch (error) {
             // console.log(error);
-            return "API G2A desligada ou arquivo env faltando.";
+            return "jogo não encontrado ou arquivo env faltando.";
         }
     } catch (error) {
         // console.log(error);

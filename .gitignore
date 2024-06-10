@@ -1,4 +1,7 @@
 node_modules
-
+package-lock.json
+.env
 ~$*.xlsx
 *.csv
+searcheGam.js
+searcheKing.js

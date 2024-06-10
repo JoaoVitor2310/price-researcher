@@ -14,8 +14,21 @@ const clearString = (stringToSearch) => {
     // Remove somente o  ™, : e ®. Precisa ser feito separado
     stringToSearch = stringToSearch.replace(/[™:®]/g, '');
 
-    // Remover "|" e qualquer espaço após ele
+    // Remove "|" e qualquer espaço após ele
     stringToSearch = stringToSearch.replace(/\|\s*/g, ''); // Substitui "|" e qualquer espaço subsequente
+    
+    // Remove "'" e qualquer espaço após ele
+    stringToSearch = stringToSearch.replace(/\'\s*/g, ''); // Substitui "|" e qualquer espaço subsequente
+    
+    // Remove "’" e qualquer espaço após ele
+    stringToSearch = stringToSearch.replace(/\’\s*/g, ''); // Substitui "|" e qualquer espaço subsequente
+    
+    // Remove "the" (case-insensitive) e qualquer espaço subsequente
+    stringToSearch = stringToSearch.replace(/the\s*/gi, '');
+    
+    // Remove todas as vírgulas
+    stringToSearch = stringToSearch.replace(/,/g, '');
+
 
     return stringToSearch;
 }

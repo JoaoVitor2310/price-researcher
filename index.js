@@ -11,6 +11,8 @@ import searchSteamDb from './functions/searchSteamDb.js';
 import searchGamivo from './functions/searchGamivo.js';
 import searchG2A from './functions/searchG2A.js';
 import searchKinguin from './functions/searchKinguin.js';
+import searcheKing from './functions/searcheKing.js'; // Arquivo de teste
+import searcheGam from './functions/searcheGam.js'; // Arquivo de teste
 import { isNumber } from 'puppeteer';
 
 
@@ -85,9 +87,17 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                   if (popularity > 0 && search) {
 
                         if (isBestBuy86 == "false") {
+                              // priceKinguin = await searcheKing(game, minPopularity, popularity);
+                              // priceGamivo = await searcheGam(game, minPopularity, popularity);
+                              
+                              // fullLine = `G2A\t$sdasd\t\t\t\tdasdt$asd\n`; responseFile += fullLine;
+
+
+
                               priceGamivo = await searchGamivo(game, minPopularity, popularity);
                               if (priceGamivo !== 'F' && priceGamivo !== 'N') {
-                                    fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\t${game}\n`; responseFile += fullLine;
+                                    fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\t${game}\n`; 
+                                    responseFile += fullLine;
                               }
                         } else {
                               // priceGamivo = await searchGamivo(game, minPopularity, popularity);
@@ -101,6 +111,10 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
                               const promise2 = searchG2A(game, minPopularity, popularity);
                               const promise3 = searchKinguin(game, minPopularity, popularity);
                               [priceGamivo, priceG2A, priceKinguin] = await Promise.all([promise1, promise2, promise3]);
+                              
+                              // priceG2A = 1; // Debug
+                              // priceGamivo = 1;
+                              // priceKinguin = 1;
 
                               // [priceGamivo, priceG2A] = await Promise.all([promise1, promise2]); // Sem KINGUIN
                         }
