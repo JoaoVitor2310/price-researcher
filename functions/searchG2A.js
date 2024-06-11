@@ -91,7 +91,8 @@ const searchG2A = async (gameString, minPopularity, popularity, gameType = "Stea
             return lineToWrite.replace('.', ',');
         } catch (error) {
             // console.log(error);
-            return "jogo não encontrado ou arquivo env faltando.";
+            console.log("jogo não encontrado ou arquivo env faltando.");
+            return "F";
         }
     } catch (error) {
         // console.log(error);

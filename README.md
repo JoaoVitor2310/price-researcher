@@ -58,10 +58,6 @@ Recursos utilizados para desenvolver o projeto:
 git clone https://github.com/JoaoVitor2310/price-researcher # Clonar o repositório
 cd price-researcher # Entrar no diretório do projeto
 npm install # Instalar as dependências
-sudo apt-get install -y xvfb # Para ter uma interface gráfica simulada(somente se tiver em um servidor sem interface gráfica)
-xvfb-run node index.js
-Xvfb :99 -screen 0 1920x1080x24 &
-export DISPLAY=:99
 npm start # Executar o projeto
 ```
 

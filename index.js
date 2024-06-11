@@ -11,8 +11,6 @@ import searchSteamDb from './functions/searchSteamDb.js';
 import searchGamivo from './functions/searchGamivo.js';
 import searchG2A from './functions/searchG2A.js';
 import searchKinguin from './functions/searchKinguin.js';
-import searcheKing from './functions/searcheKing.js'; // Arquivo de teste
-import searcheGam from './functions/searcheGam.js'; // Arquivo de teste
 import { isNumber } from 'puppeteer';
 
 
@@ -65,9 +63,9 @@ app.post('/upload', upload.single('fileToUpload'), async (req, res) => {
 
       // O for vai começar aqui passando em todos os gamesToSearch
       for (let game of gamesToSearch) {
-            let search = true, fullLine;
+            let search = true, fullLine, popularity;
             console.log("Game: " + game);
-            let popularity = await searchSteamDb(game);
+            minPopularity !== 0 ? popularity = await searchSteamDb(game) : popularity = 999;
             // let popularity = 2442; // Debug
 
             if (popularity !== 'F') { // Jogo possui mais de 0 de popularidade

@@ -8,6 +8,7 @@ const clearEdition = (stringToSearch) => {
     const deluxe = /\bdeluxe\b/gi;
     const premium = /\bpremium\b/gi;
     const bundle = /\bbundle\b/gi;
+    const special = /\bspecial\b/gi;
     
     const rowRegex = /\brow\b/gi; // Detectar "ROW" como palavra separada
     const euRegex = /\beu\b/gi; // Detectar "EU" como palavra separada
@@ -23,6 +24,7 @@ const clearEdition = (stringToSearch) => {
         .replace(deluxe, '')
         .replace(premium, '')
         .replace(bundle, '')
+        .replace(special, '')
         .replace(rowRegex, '') // Remove "ROW"
         .replace(euRegex, ''); // Remove "EU"
 

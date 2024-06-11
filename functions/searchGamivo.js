@@ -53,6 +53,7 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
 
         gameString = clearString(gameString);
         gameString = clearDLC(gameString);
+        // console.log(gameString);
 
         // Itera sobre cada resultado
         for (const resultado of resultados) {
@@ -61,17 +62,22 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
 
             gameName = clearString(gameName);
             gameName = clearDLC(gameName);
-
+            // console.log(gameName);
+            
             // Verifica se o texto do jogo contém a palavra "Steam"
             if (gameName.includes(gameString)) {
-                const regex = new RegExp(`${gameString}\\s[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // Padrão: nome do jogo - região - "Global"
-                // const regex2 = new RegExp(`${gameString}\\sGlobal Steam`, 'i'); // Padrão: Nome do jogo - "Global Steam"
-                const regex2 = new RegExp(`${gameString}\\sGlobal Steam$`, 'i');
-                const regex3 = new RegExp(`${gameString}\\sROW\\sSteam$`, 'i');
+                // const regex = new RegExp(`${gameString}\\s*[a-zA-Z0-9/.]+\\sGlobal`, 'i'); // Padrão: nome do jogo - região - "Global"
+                const regex = new RegExp(`${gameString}\\s*(?!2\\s)[a-zA-Z0-9/.]+\\sGlobal(?:\\s(steam)|$)`, 'i');
 
+                // const regex2 = new RegExp(`${gameString}\\sGlobal Steam$`, 'i');
+                const regex2 = new RegExp(`${gameString}\\s*Global Steam$`, 'i');
+                
+                const regex3 = new RegExp(`${gameString}\\sROW\\sSteam$`, 'i');            
 
                 if (regex.test(gameName) || regex2.test(gameName) || regex3.test(gameName)) {
+                // if (regex.test(gameName)) {
                     // Clica no resultado
+                    // console.log("gameName: " + gameName);
 
                     const elementoLink = await resultado.$('a');
                     const href = await (await elementoLink.getProperty('href')).jsonValue();
@@ -84,10 +90,9 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
             }
         }
 
-
         if (productString) {
             try {
-                const response = await axios.get(`${apiGamivoUrl}/api/products/priceResearcher/${productString}`); // Colocar um try aqui p saber qnd o erro for aqui
+                const response = await axios.get(`${apiGamivoUrl}/api/products/priceResearcher/${productString}`);
 
                 const precoGamivo = response.data.menorPreco - 0.01;
 
@@ -95,7 +100,8 @@ const searchGamivo = async (gameString, minPopularity, popularity) => {
 
             } catch (error) {
                 console.log(error);
-                return "API Gamivo desligada ou arquivo env faltando";
+                console.log('API Gamivo desligada ou arquivo env faltando');
+                return "F";
             }
         } else {
             return "F";
