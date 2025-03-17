@@ -1,0 +1,16 @@
+Gerais: Os caracteres especiais podem ser ignorados ou substituídos por outros, caso a busca não fique totalmente idêntica, segue alguns exemplos desses caracteres:
+" - / : ®️ | (espaço) "
+
+Exemplos: Rambo 2 - A Missão / Rambo 2 A missão / Rambo 2: A Missão / Rambo 2 | A missão / Rambo 2®️
+Visto que o mesmo jogo pode aparecer das formas acimas nas diferentes plataformas
+
+G2A: na frente do nome do jogo pode estar escrito "(PC)"
+e em todos eles também deve constar "Steam Key - Global" Quase sempre nesse formato
+
+GAMIVO - No final do nome do jogo deverá constar "Global Steam"
+Entre o nome do jogo e o final (Global Steam) poderá constar uma série de siglas separadas por "/", isso pode ser ignorado.
+
+Kinguin - No final do nome do jogo poderá constar "PC Steam CD Key" ou apenas "Steam CD Key"
+
+Price Researcher
+Identificar a popularidade dos jogos, mesmo quando o parâmetro inserido for = 0.
