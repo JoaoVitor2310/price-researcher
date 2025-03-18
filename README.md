@@ -9,9 +9,10 @@
 </p>
 
 <p align="center">
-    <b>Pesquisador de preço de jogos de forma completamente automatizada.</b>
+    <b>Pesquisador(web scrapper) de preço de jogos de forma completamente automatizada.</b>
 </p>
 
+### Link: http://191.101.70.89:5000/ 
 
 <h2 id="about"> Problema e contextualização </h2>
 

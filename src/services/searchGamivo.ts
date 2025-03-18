@@ -75,11 +75,11 @@ export const searchGamivo = async (gamesToSearch: foundGames[]): Promise<foundGa
             const resultados = await page.$$('.product-tile__name');
 
             let gameString = game.name;
-            let gameStringClean: string = clearEdition(gameString);
+            let gameStringClean = clearEdition(gameString);
             gameStringClean = clearString(gameStringClean);
             gameStringClean = clearDLC(gameStringClean);
             gameStringClean = gameStringClean.toLowerCase().trim();
-            console.log('gameStringClean: ' + gameStringClean);
+            // console.log('gameStringClean: ' + gameStringClean);
 
             // Itera sobre cada resultado
             for (const resultado of resultados) {
@@ -91,7 +91,7 @@ export const searchGamivo = async (gamesToSearch: foundGames[]): Promise<foundGa
                 gameNameClean = clearString(gameNameClean);
                 gameNameClean = clearDLC(gameNameClean);
                 gameNameClean = gameNameClean.toLowerCase().trim();
-                console.log(gameNameClean);
+                // console.log(gameNameClean);
 
                 // Verifica se o texto do jogo contém a palavra "Steam"
                 if (gameNameClean.includes(gameStringClean)) {

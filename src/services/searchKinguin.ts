@@ -27,7 +27,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
     let response: AxiosResponse;
 
     browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
@@ -39,12 +39,13 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
     });
 
     for (const [index, game] of gamesToSearch.entries()) {
-        console.log('---------------------');
-        console.log('game.name: ' + game.name);
+        // console.log('---------------------');
+        // console.log('game.name: ' + game.name);
         // let searchString = encodeURIComponent(game.name).replace(/%E2%84%A2/g, ''); // Remove "™"
         let searchString = clearDLC(game.name), currentPage = 0;
-        searchString = searchString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F", "™" -> "" e "'" -> "%27"
-        console.log('searchString(alterar): ' + searchString);
+        // searchString = searchString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F", "™" -> "" e "'" -> "%27"
+        searchString = encodeURIComponent(clearDLC(game.name)).replace(/%E2%84%A2/g, ''); // Remove ™ manualmente, pq encodeURIComponent não remove
+
         while (currentPage <= 1) { // Vai tentar na segunda página
             try {
                 await page.goto(`https://www.kinguin.net/listing?active=1&hideUnavailable=0&phrase=${searchString}&page=${currentPage}&size=100&sort=bestseller.total,DESC`); // Size 100 é o máximo
@@ -209,7 +210,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
         console.log('tentando o jogo: ' + game.name);
         try {
             response1 = await axios.get(`https://gateway.kinguin.net/kpc/api/v1/products/search/findByTypeAndExternalId?type=kinguin&externalId=${externalId}`);
-            console.log(response1.data);
+            // console.log(response1.data);
         } catch (error) {
             // console.log(error);
         }
@@ -221,7 +222,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
                     'Authorization': `Bearer ${token}`
                 }
             });
-            console.log(response2.data);
+            // console.log(response2.data);
 
         } catch (error) {
             console.log(error);
@@ -237,7 +238,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
         }
 
         if (menorPreco == Number.MAX_SAFE_INTEGER) {
-            game.KinguinPrice = 'F';
+            game.KinguinPrice = 0;
             continue;
         }
 

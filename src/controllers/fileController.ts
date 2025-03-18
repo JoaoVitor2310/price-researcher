@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { response, Response } from "express";
 import { MulterRequest } from "../types/MulterRequest";
 import fs from 'fs';
 import { searchGamivo } from "../services/searchGamivo.js";
@@ -8,6 +8,7 @@ import { worthyByPopularity } from "../helpers/worthyByPopularity.js";
 // import { searchKinguin } from "../service/searchKinguin.txt";
 import { foundGames } from "../types/foundGames";
 import { searchKinguin } from "../services/searchKinguin";
+import searchG2A from "../services/searchG2A";
 
 export const uploadFile = async (req: MulterRequest, res: Response) => {
     if (!req.file) {
@@ -47,95 +48,118 @@ export const uploadFile = async (req: MulterRequest, res: Response) => {
     // return res.status(200).json(foundGames);
     // @ts-ignore
     let foundGames: foundGames[] = [
-        {
-            "id": 0,
-            "name": "cook serve delicious! 3?!",
-            "popularity": 164
-        },
+        // {
+        //     "id": 0,
+        //     "name": "cook serve delicious! 3?!",
+        //     "popularity": 164
+        // },
         {
             "id": 1,
-            "name": "Devil May Cry 4 Special Edition",
+            "name": "Devil May Cry 4",
             "popularity": 164
         },
         {
             "id": 2,
-            "name": "Kingdom Come: Deliverance Special Edition",
-            "popularity": 20169
-        },
-        {
-            "id": 2,
-            "name": "Kingdom Come: Deliverance",
+            "name": "Devil May Cry 4 Special Edition", // Kingdom Come: Deliverance Special Edition
             "popularity": 20169
         },
         {
             "id": 3,
-            "name": "Terraformers",
-            "popularity": 141
+            "name": "Kingdom Come: Deliverance",
+            "popularity": 20169
         },
         {
             "id": 4,
-            "name": "The Elder Scrolls V: Skyrim Special Edition",
-            "popularity": 29965
+            "name": "Terraformers",
+            "popularity": 141
         },
+        // {
+        //     "id": 5,
+        //     "name": "The Elder Scrolls V: Skyrim Special Edition",
+        //     "popularity": 29965
+        // },
+        // {
+        //     "id": 6,
+        //     "name": "patrician iii",
+        //     "popularity": 66
+        // },
+        // {
+        //     "id": 7,
+        //     "name": "Sid Meier's Civilization IV: Beyond the Sword",
+        //     "popularity": 2000
+        // },
+        // {
+        //     "id": 8,
+        //     "name": "the walking dead",
+        //     "popularity": 219
+        // },
         {
-            "id": 5,
-            "name": "patrician iii",
-            "popularity": 66
-        },
-        {
-            "id": 6,
-            "name": "Sid Meier's Civilization IV: Beyond the Sword",
-            "popularity": 2000
-        },
-        {
-            "id": 7,
-            "name": "the walking dead",
-            "popularity": 219
-        },
-        {
-            "id": 8,
+            "id": 9,
             "name": "nuclear throne",
             "popularity": 137
         },
-        {
-            "id": 9,
-            "name": "the long dark",
-            "popularity": 3164
-        },
-        {
-            "id": 10,
-            "name": "Symphony of War: The Nephilim Saga",
-            "popularity": 645
-        },
-        {
-            "id": 11,
-            "name": "Coromon",
-            "popularity": 322
-        },
-        {
-            "id": 12,
-            "name": "The Excavation of Hob's Barrow",
-            "popularity": 18
-        }
+        // {
+        //     "id": 10,
+        //     "name": "the long dark",
+        //     "popularity": 3164
+        // },
+        // {
+        //     "id": 11,
+        //     "name": "Symphony of War: The Nephilim Saga",
+        //     "popularity": 645
+        // },
+        // {
+        //     "id": 12,
+        //     "name": "Coromon",
+        //     "popularity": 322
+        // },
+        // {
+        //     "id": 13,
+        //     "name": "The Excavation of Hob's Barrow",
+        //     "popularity": 18
+        // }
     ];
 
     foundGames = worthyByPopularity(foundGames, minPopularity);
     // let gamivoGames = await searchGamivo(foundGames);
-    // for (const game of gamivoGames) {
-    //     fullLine = `G2A\t${game.GamivoPrice}\tKinguin\t\t\t\t${game.popularity}\t${game.name}\n`;
-    //     responseFile += fullLine;
-    //     console.log(fullLine);
-    // }
-    let kinguinGames = await searchKinguin(foundGames);
-    return res.status(200).json(kinguinGames);
+    // let kinguinGames = await searchKinguin(foundGames);
+    let g2aGames = await searchG2A(foundGames);
+    console.log(g2aGames);
 
-    // let gamivoGames = await searchGamivo(foundGames);
+    return res.status(200).json(g2aGames);
+    // console.log('gamivoGames');
+    // console.log(gamivoGames);
+    // console.log("kinguinGames");
     // console.log(kinguinGames);
 
+    // const finalGames = gamivoGames.map(game => {
+    //     const kinguinGame = kinguinGames.find(k => k.id === game.id);
+
+    //     return {
+    //         id: game.id,
+    //         name: game.name,
+    //         popularity: game.popularity,
+    //         GamivoPrice: game.GamivoPrice,
+    //         KinguinPrice: kinguinGame ? kinguinGame.KinguinPrice : null
+    //     };
+    // });
+
+    console.log('finalGames');
+    console.log(finalGames);
+    for (const game of finalGames) {
+        const gamivoPrice = (game.GamivoPrice === null || game.GamivoPrice === "null") ? "F" : game.GamivoPrice;
+        const kinguinPrice = (game.KinguinPrice === null || game.KinguinPrice === "null") ? "F" : game.KinguinPrice;
+
+        fullLine = `G2A\t${gamivoPrice}\t${kinguinPrice}\t\t\t\t${game.popularity}\t${game.name}\n`;
+        responseFile += fullLine;
+        // console.log(fullLine);
+    }
+
+    console.log(responseFile);
 
     fs.writeFileSync(filePath, responseFile);
 
-    res.download(filePath, 'resultado-price-researcher.txt', (err) => {
+    return res.download(filePath, 'resultado-price-researcher.txt', (err) => {
         // Verifica se houve algum erro durante o download
 
         const newHoraAtual = new Date();
@@ -151,6 +175,13 @@ export const uploadFile = async (req: MulterRequest, res: Response) => {
             fs.unlinkSync(filePath);
         }
     });
+
+    return res.status(200).json(finalGames);
+
+    // let gamivoGames = await searchGamivo(foundGames);
+    // console.log(kinguinGames);
+
+
 
     // return res.status(200).json(responseFile);
 
