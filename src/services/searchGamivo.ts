@@ -50,7 +50,7 @@ export const searchGamivo = async (gamesToSearch: foundGames[]): Promise<foundGa
     });
 
     for (const [index, game] of gamesToSearch.entries()) {
-        console.log(`Índice: ${index}, Jogo:`, game.name);
+        console.log(`Gamivo: ${index}, Jogo:`, game.name);
         let searchString = encodeURIComponent(game.name).replace(/%E2%84%A2/g, ''); // Remove "™"
 
         try {
@@ -126,7 +126,7 @@ export const searchGamivo = async (gamesToSearch: foundGames[]): Promise<foundGa
 
                         const startIndex = href.indexOf('/product/') + '/product/'.length;
                         productSlug = href.substring(startIndex);
-                        console.log(productSlug);
+                        // console.log(productSlug);
 
                         // break; // Encerra o loop depois de clicar em um resultado
                     }

@@ -44,115 +44,65 @@ export const uploadFile = async (req: MulterRequest, res: Response) => {
         }
     }
 
-    // let foundGames = await searchSteamDb(gamesToSearch);
+    let foundGames = await searchSteamDb(gamesToSearch);
     // return res.status(200).json(foundGames);
     // @ts-ignore
-    let foundGames: foundGames[] = [
-        // {
-        //     "id": 0,
-        //     "name": "cook serve delicious! 3?!",
-        //     "popularity": 164
-        // },
-        {
-            "id": 1,
-            "name": "Devil May Cry 4",
-            "popularity": 164
-        },
-        {
-            "id": 2,
-            "name": "Devil May Cry 4 Special Edition", // Kingdom Come: Deliverance Special Edition
-            "popularity": 20169
-        },
-        {
-            "id": 3,
-            "name": "Kingdom Come: Deliverance",
-            "popularity": 20169
-        },
-        {
-            "id": 4,
-            "name": "Terraformers",
-            "popularity": 141
-        },
-        // {
-        //     "id": 5,
-        //     "name": "The Elder Scrolls V: Skyrim Special Edition",
-        //     "popularity": 29965
-        // },
-        // {
-        //     "id": 6,
-        //     "name": "patrician iii",
-        //     "popularity": 66
-        // },
-        // {
-        //     "id": 7,
-        //     "name": "Sid Meier's Civilization IV: Beyond the Sword",
-        //     "popularity": 2000
-        // },
-        // {
-        //     "id": 8,
-        //     "name": "the walking dead",
-        //     "popularity": 219
-        // },
-        {
-            "id": 9,
-            "name": "nuclear throne",
-            "popularity": 137
-        },
-        // {
-        //     "id": 10,
-        //     "name": "the long dark",
-        //     "popularity": 3164
-        // },
-        // {
-        //     "id": 11,
-        //     "name": "Symphony of War: The Nephilim Saga",
-        //     "popularity": 645
-        // },
-        // {
-        //     "id": 12,
-        //     "name": "Coromon",
-        //     "popularity": 322
-        // },
-        // {
-        //     "id": 13,
-        //     "name": "The Excavation of Hob's Barrow",
-        //     "popularity": 18
-        // }
-    ];
+    // let foundGames: foundGames[] = [ // Para testar
+    //     {
+    //         "id": 0,
+    //         "name": "cook serve delicious! 3?!",
+    //         "popularity": 164
+    //     },
+    //     {
+    //         "id": 1,
+    //         "name": "Devil May Cry 4 Special Edition",
+    //         "popularity": 164
+    //     },
+    //     {
+    //         "id": 2,
+    //         "name": "Kingdom Come: Deliverance Special Edition", // 
+    //         "popularity": 20169
+    //     },
+    // ];
 
     foundGames = worthyByPopularity(foundGames, minPopularity);
-    // let gamivoGames = await searchGamivo(foundGames);
-    // let kinguinGames = await searchKinguin(foundGames);
+    let gamivoGames = await searchGamivo(foundGames);
+    let kinguinGames = await searchKinguin(foundGames);
     let g2aGames = await searchG2A(foundGames);
-    console.log(g2aGames);
 
-    return res.status(200).json(g2aGames);
-    // console.log('gamivoGames');
-    // console.log(gamivoGames);
-    // console.log("kinguinGames");
-    // console.log(kinguinGames);
+    // return res.status(200).json(kinguinGames);
 
-    // const finalGames = gamivoGames.map(game => {
-    //     const kinguinGame = kinguinGames.find(k => k.id === game.id);
+    const allGames = [
+        ...gamivoGames,
+        ...kinguinGames.filter(k => !gamivoGames.some(g => g.id === k.id)),
+        ...g2aGames.filter(g => !gamivoGames.some(g => g.id === g.id))
+    ];
 
-    //     return {
-    //         id: game.id,
-    //         name: game.name,
-    //         popularity: game.popularity,
-    //         GamivoPrice: game.GamivoPrice,
-    //         KinguinPrice: kinguinGame ? kinguinGame.KinguinPrice : null
-    //     };
-    // });
+    const finalGames = allGames.map(game => {
+        const gamivoGame = gamivoGames.find(g => g.id === game.id);
+        const kinguinGame = kinguinGames.find(k => k.id === game.id);
+        const g2aGame = g2aGames.find(g => g.id === game.id);
 
-    console.log('finalGames');
-    console.log(finalGames);
+        return {
+            id: game.id,
+            name: game.name,
+            popularity: game.popularity,
+            GamivoPrice: gamivoGame ? gamivoGame.GamivoPrice : null,
+            KinguinPrice: kinguinGame ? kinguinGame.KinguinPrice : null,
+            G2APrice: g2aGame ? g2aGame.G2APrice : null
+        };
+    });
+
+    // console.log('finalGames');
+    // console.log(finalGames);
     for (const game of finalGames) {
         const gamivoPrice = (game.GamivoPrice === null || game.GamivoPrice === "null") ? "F" : game.GamivoPrice;
         const kinguinPrice = (game.KinguinPrice === null || game.KinguinPrice === "null") ? "F" : game.KinguinPrice;
+        const g2aPrice = (game.G2APrice === null || game.G2APrice === "null") ? "F" : game.G2APrice;
 
-        fullLine = `G2A\t${gamivoPrice}\t${kinguinPrice}\t\t\t\t${game.popularity}\t${game.name}\n`;
+        fullLine = `${g2aPrice}\t${gamivoPrice}\t${kinguinPrice}\t\t\t\t${game.popularity}\t${game.name}\n`;
         responseFile += fullLine;
-        // console.log(fullLine);
+        console.log(fullLine);
     }
 
     console.log(responseFile);
@@ -176,76 +126,4 @@ export const uploadFile = async (req: MulterRequest, res: Response) => {
         }
     });
 
-    return res.status(200).json(finalGames);
-
-    // let gamivoGames = await searchGamivo(foundGames);
-    // console.log(kinguinGames);
-
-
-
-    // return res.status(200).json(responseFile);
-
-
-    // O for vai passar em todos os gamesToSearch
-    // for (let game of gamesToSearch) {
-    //     let search = true, fullLine, popularity;
-    //     console.log("Game: " + game);
-    //     const G2A = await searchG2A(minPopularity, 100, gamesToSearch);
-    //     // return res.status(200).json(G2A);
-
-
-    //     console.log(gamivo);
-    //     // return res.status(200).json(popularity);
-
-    //     minPopularity !== 0 ? popularity = await searchSteamDb(game) : popularity = 999;
-    //     // let popularity = 2442; // Debug
-
-    //     if (popularity == 'F') continue;
-
-    //     if (popularity < minPopularity) search = false;
-
-    //     //Converte para o formato brasileiro com .
-    //     // CHECAR SE É Number
-    //     if (!isNumber(popularity)) {
-    //         if (popularity.includes(',')) { popularity = popularity.replace(',', '.'); }
-    //         let popularityNumber = parseFloat(popularity);
-    //         let decimalPlaces = (popularity.split('.')[1] || '').length;
-    //         popularity = popularityNumber.toFixed(decimalPlaces);
-    //     }
-
-    //     if (popularity <= 0 || !search) continue;
-
-    //     priceGamivo = await searchGamivo(game, minPopularity, popularity);
-    //     if (priceGamivo !== 'F' && priceGamivo !== 'N') {
-    //         fullLine = `G2A\t${priceGamivo}\tKinguin\t\t\t\t${popularity}\t${game}\n`;
-    //         responseFile += fullLine;
-    //     }
-
-    //     console.log(fullLine);
-    // }
-
-    // console.log("responseFile:\n" + responseFile);
-
-    // // res.json('A'); // DEBUG
-    // // return;
-
-
-    // fs.writeFileSync(filePath, responseFile);
-
-    // res.download(filePath, 'resultado-price-researcher.txt', (err) => {
-    //     // Verifica se houve algum erro durante o download
-
-    //     const newHoraAtual = new Date();
-    //     const options = { timeZone: 'America/Sao_Paulo', hour12: false };
-    //     const hora2 = newHoraAtual.toLocaleTimeString('pt-BR', options);
-
-    //     console.log(`Horário de início: ${hora1}, horário de término: ${hora2}`);
-    //     if (err) {
-    //         console.error('Erro ao fazer o download do arquivo:', err);
-    //         fs.unlinkSync(filePath);
-    //     } else {
-    //         // Se o download for bem-sucedido, exclui o arquivo
-    //         fs.unlinkSync(filePath);
-    //     }
-    // });
 }

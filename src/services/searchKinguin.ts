@@ -15,13 +15,15 @@ import axios, { AxiosResponse } from 'axios';
 import { foundGames } from '../types/foundGames.js';
 import { clearDLC } from '../helpers/clearDLC.js';
 import { clearString } from '../helpers/clearString.js';
+import { clearEdition } from '../helpers/clearEdition.js';
+import { hasEdition } from '../helpers/hasEdition.js';
 
 puppeteer.use(
     StealthPlugin()
 );
 
 export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundGames[]> => {
-    let productSlug = '', gameHref = '', browser, externalId = '', elementoClicado = false;
+    let productSlug = '', gameHref = '', browser, externalId = '', elementoClicado = false, gameString = '';;
     const foundGames: foundGames[] = [];
 
     let response: AxiosResponse;
@@ -39,12 +41,11 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
     });
 
     for (const [index, game] of gamesToSearch.entries()) {
-        // console.log('---------------------');
-        // console.log('game.name: ' + game.name);
-        // let searchString = encodeURIComponent(game.name).replace(/%E2%84%A2/g, ''); // Remove "™"
-        let searchString = clearDLC(game.name), currentPage = 0;
-        // searchString = searchString.replace(/ /g, "%20").replace(/\//g, "%2F").replace(/\?/g, "%3F").replace(/™/g, '').replace(/'/g, "%27"); // Substitui: " " -> "%20", "/" -> "%2F" e "?" -> "%3F", "™" -> "" e "'" -> "%27"
-        searchString = encodeURIComponent(clearDLC(game.name)).replace(/%E2%84%A2/g, ''); // Remove ™ manualmente, pq encodeURIComponent não remove
+        console.log(`kinguin: ${index}, Jogo:`, game.name);
+
+        let currentPage = 0;
+
+        let searchString = encodeURIComponent(game.name).replace(/%E2%84%A2/g, ''); // Remove ™ manualmente, pq encodeURIComponent não remove
 
         while (currentPage <= 1) { // Vai tentar na segunda página
             try {
@@ -54,19 +55,25 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
                 const searchResults: { title: string; href: string }[] = await page.$$eval('h3[title]', h3s => h3s.map(h3 => ({ title: h3.textContent?.trim() || '', href: h3.querySelector('a')?.href || '' })));
                 // console.log(searchResults);
 
-                const gameString = clearDLC(game.name);
-                let gameStringClean = clearString(gameString);
-                console.log("gameStringClean: " + gameStringClean);
+                gameString = game.name;
+
+                let gameStringClean = clearEdition(gameString);
+                gameStringClean = clearString(gameStringClean);
+                gameStringClean = clearDLC(gameStringClean);
+                gameStringClean = gameStringClean.toLowerCase().trim();
+                // console.log("gameStringClean: " + gameStringClean);
 
                 for (const result of searchResults) { // For para entrar na página do jogo
                     if (result.title.includes('Steam CD Key')) {
 
                         const gameName = result.title.substring(0, result.title.indexOf('Steam CD Key')).trim(); // Extrai a parte da string até "Steam CD Key"
 
-                        let gameNameClean = clearString(gameName);
+                        let gameNameClean = clearEdition(gameName!);
+                        gameNameClean = clearString(gameNameClean);
                         gameNameClean = clearDLC(gameNameClean);
+                        gameNameClean = gameNameClean.toLowerCase().trim();
 
-                        console.log("gameNameClean: " + gameNameClean);
+                        // console.log("gameNameClean: " + gameNameClean);
 
                         // const regex = new RegExp(`^${gameStringClean}\\s*pc?$`, 'i');  // 'i' para tornar a regex case-insensitive
                         // const regex = new RegExp(`${gameStringClean}\\s*(pc)?$`, 'i');
@@ -74,7 +81,17 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
 
 
                         if (regex.test(gameNameClean)) {
-                            console.log('gameName certo: ' + game.name);
+
+                            const gameStringKeywords = hasEdition(gameString);
+                            const gameNameKeywords = hasEdition(gameName!);
+
+                            // Se um dos conjuntos tiver palavras-'edition' que o outro não tem, faz "continue"
+                            if (![...gameStringKeywords].every(keyword => gameNameKeywords.has(keyword)) ||
+                                ![...gameNameKeywords].every(keyword => gameStringKeywords.has(keyword))) {
+                                continue;
+                            }
+
+                            // console.log('gameName certo: ' + game.name);
 
                             gameHref = result.href; // Armazena o href do jogo
 
@@ -111,76 +128,6 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
     }
 
     // console.log(foundGames);
-    // let foundGamess = [
-    // {
-    //     id: 0,
-    //     name: 'cook serve delicious! 3?!',
-    //     popularity: 164,
-    //     KinguinPrice: '70212'
-    // },
-    // {
-    //     id: 1,
-    //     name: 'Devil May Cry 4 Special Edition',
-    //     popularity: 164,
-    //     KinguinPrice: '17882'
-    // },
-    // {
-    //     id: 2,
-    //     name: 'Kingdom Come: Deliverance Special Edition',
-    //     popularity: 20169,
-    //     KinguinPrice: '45585'
-    // },
-    // {
-    //     id: 3,
-    //     name: 'Kingdom Come: Deliverance',
-    //     popularity: 20169,
-    //     KinguinPrice: '44762'
-    // },
-    // {
-    //     id: 4,
-    //     name: 'Terraformers',
-    //     popularity: 141,
-    //     KinguinPrice: '115344'
-    // },
-    // {
-    //     id: 5,
-    //     name: 'The Elder Scrolls V: Skyrim Special Edition',
-    //     popularity: 29965,
-    //     KinguinPrice: '31221'
-    // },
-    // {
-    //     id: 6,
-    //     name: 'patrician iii',
-    //     popularity: 66,
-    //     KinguinPrice: '1800'
-    // },
-    // {
-    //     id: 7,
-    //     name: "Sid Meier's Civilization IV: Beyond the Sword",
-    //     popularity: 2000,
-    //     KinguinPrice: '9746'
-    // },
-    // {
-    //     id: 10,
-    //     name: 'the long dark',
-    //     popularity: 3164,
-    //     KinguinPrice: '10166'
-    // },
-    // {
-    //     id: 11,
-    //     name: 'Symphony of War: The Nephilim Saga',
-    //     popularity: 645,
-    //     KinguinPrice: '121032'
-    // },
-    // { id: 12, name: 'Coromon', popularity: 322, KinguinPrice: '114626' },
-    // {
-    //     id: 13,
-    //     name: "The Excavation of Hob's Barrow",
-    //     popularity: 18,
-    //     KinguinPrice: '132564'
-    // }
-    // ];
-    console.log('PARTINDO PARA A API');
 
     // return foundGames;
 
@@ -207,7 +154,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
         let menorPreco = Number.MAX_SAFE_INTEGER;
         externalId = String(game.KinguinPrice);
         let response1, response2;
-        console.log('tentando o jogo: ' + game.name);
+        console.log(`Kinguin: ${game.id}, Jogo:`, game.name);
         try {
             response1 = await axios.get(`https://gateway.kinguin.net/kpc/api/v1/products/search/findByTypeAndExternalId?type=kinguin&externalId=${externalId}`);
             // console.log(response1.data);
@@ -253,7 +200,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
 
 
         game.KinguinPrice = precoFormatado;
-        console.log('preco: ' + game.KinguinPrice);
+        console.log('precoKinguin: ' + game.KinguinPrice);
 
     }
 
@@ -269,7 +216,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
     // @ts-ignore
     if (browser && browser.process()) browser.process().kill('SIGINT');
 
-    console.log(foundGames);
+    // console.log(foundGames);
     return foundGames;
 }
 
