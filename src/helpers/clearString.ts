@@ -1,5 +1,8 @@
 export const clearString = (stringToSearch: string): string => {
 
+    // Remove todas as ocorrências de "MX" (case-insensitive) // MX é chinês simplificado, mas pode ser confundido com 1010 em romano
+    stringToSearch = stringToSearch.replace(/\/mx\b/gi, '');
+
     const romanRegex = /\b(?!dlc\b)[IVXLCDM]+\b/gi;
 
     // Substituir números romanos pelo equivalente decimal
