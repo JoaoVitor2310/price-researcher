@@ -7,8 +7,8 @@ import { searchSteamDb } from "../services/searchSteamDb.js";
 import { worthyByPopularity } from "../helpers/worthyByPopularity.js";
 // import { searchKinguin } from "../service/searchKinguin.txt";
 import { foundGames } from "../types/foundGames";
-import { searchKinguin } from "../services/searchKinguin";
-import searchG2A from "../services/searchG2A";
+import { searchKinguin } from "../services/searchKinguin.js";
+import searchG2A from "../services/searchG2A.js";
 
 export const uploadFile = async (req: MulterRequest, res: Response) => {
     if (!req.file) {
@@ -45,23 +45,12 @@ export const uploadFile = async (req: MulterRequest, res: Response) => {
     }
 
     let foundGames = await searchSteamDb(gamesToSearch);
-    // return res.status(200).json(foundGames);
     // @ts-ignore
     // let foundGames: foundGames[] = [ // Para testar
     //     {
     //         "id": 0,
-    //         "name": "cook serve delicious! 3?!",
+    //         "name": "Chop is dish",
     //         "popularity": 164
-    //     },
-    //     {
-    //         "id": 1,
-    //         "name": "Devil May Cry 4 Special Edition",
-    //         "popularity": 164
-    //     },
-    //     {
-    //         "id": 2,
-    //         "name": "Kingdom Come: Deliverance Special Edition", // 
-    //         "popularity": 20169
     //     },
     // ];
 

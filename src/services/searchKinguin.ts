@@ -17,6 +17,7 @@ import { clearDLC } from '../helpers/clearDLC.js';
 import { clearString } from '../helpers/clearString.js';
 import { clearEdition } from '../helpers/clearEdition.js';
 import { hasEdition } from '../helpers/hasEdition.js';
+import { hasRegionLock } from '../helpers/hasRegionLock.js';
 
 puppeteer.use(
     StealthPlugin()
@@ -56,6 +57,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
                 // console.log(searchResults);
 
                 gameString = game.name;
+                // console.log("gameString: " + gameString);
 
                 let gameStringClean = clearEdition(gameString);
                 gameStringClean = clearString(gameStringClean);
@@ -67,6 +69,7 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
                     if (result.title.includes('Steam CD Key')) {
 
                         const gameName = result.title.substring(0, result.title.indexOf('Steam CD Key')).trim(); // Extrai a parte da string até "Steam CD Key"
+                        // console.log("gameName: " + gameName);
 
                         let gameNameClean = clearEdition(gameName!);
                         gameNameClean = clearString(gameNameClean);
@@ -82,10 +85,19 @@ export const searchKinguin = async (gamesToSearch: foundGames[]): Promise<foundG
 
                         if (regex.test(gameNameClean)) {
 
-                            const gameStringKeywords = hasEdition(gameString);
-                            const gameNameKeywords = hasEdition(gameName!);
+                            let gameStringKeywords = hasEdition(gameString);
+                            let gameNameKeywords = hasEdition(gameName!);
 
                             // Se um dos conjuntos tiver palavras-'edition' que o outro não tem, faz "continue"
+                            if (![...gameStringKeywords].every(keyword => gameNameKeywords.has(keyword)) ||
+                                ![...gameNameKeywords].every(keyword => gameStringKeywords.has(keyword))) {
+                                continue;
+                            }
+
+                            gameStringKeywords = hasRegionLock(gameString);
+                            gameNameKeywords = hasRegionLock(gameName!);
+
+                            // Se um dos conjuntos tiver region lock que não foi enviada, continue
                             if (![...gameStringKeywords].every(keyword => gameNameKeywords.has(keyword)) ||
                                 ![...gameNameKeywords].every(keyword => gameStringKeywords.has(keyword))) {
                                 continue;

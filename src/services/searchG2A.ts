@@ -117,7 +117,7 @@ export const searchG2A = async (gamesToSearch: foundGames[], gameType = "Steam K
 
         // Verifica se houve correspondência e extrai o número do produto
         const productId = match ? match[1] : null;
-        console.log('productId: ' + productId);
+        // console.log('productId: ' + productId);
 
         if (!productId) continue;
 
